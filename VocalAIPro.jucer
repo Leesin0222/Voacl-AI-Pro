@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<JUCERPROJECT id="VocalAIPro" name="VocalAI Pro" projectType="audioplug"
+              useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1"
+              version="1.0.0" bundleIdentifier="com.vocalai.pro" includeBinaryInAppConfig="1"
+              displaySplashScreen="1" reportAppUsage="1" splashScreenColour="Dark"
+              projectLineFeed="&#10;" companyName="LeeYongJin" companyWebsite"https://github.com/Leesin0222"
+companyEmail="dragon02tv@gmail.com" companyCopyright="2025" pluginName="VocalAI Pro"
+              pluginDesc="AI-Powered Vocal Effects Suite" pluginManufacturer="LeeYongJin"
+              pluginCode="VcAI" pluginChannelConfigs="{1, 1}, {2, 2}" pluginIsSynth="0"
+              pluginWantsMidiIn="1" pluginProducesMidiOut="0" pluginIsMidiEffectPlugin="0"
+              pluginEditorRequiresKeys="0" pluginAUExportPrefix="VocalAIProAU"
+              pluginRTASCategory="2048" aaxIdentifier="com.vocalai.pro" pluginAAXCategory="2"
+              cppLanguageStandard="17" enablePluginBinaryCopyStep="1">
+  <MAINGROUP id="VocalAIPro" name="VocalAI Pro">
+    <GROUP id="{D1F5A1C2-1234-5678-9ABC-DEF012345678}" name="Source">
+      <FILE id="VocalAIProPlugin.cpp" name="VocalAIProPlugin.cpp" compile="1" resource="0"
+            file="Source/VocalAIProPlugin.cpp"/>
+      <FILE id="VocalAIProPlugin.h" name="VocalAIProPlugin.h" compile="0" resource="0"
+            file="Source/VocalAIProPlugin.h"/>
+      <FILE id="VocalAIProEditor.cpp" name="VocalAIProEditor.cpp" compile="1" resource="0"
+            file="Source/VocalAIProEditor.cpp"/>
+      <FILE id="VocalAIProEditor.h" name="VocalAIProEditor.h" compile="0" resource="0"
+            file="Source/VocalAIProEditor.h"/>
+      <FILE id="AIPitchTuner.h" name="AIPitchTuner.h" compile="0" resource="0"
+            file="Source/AIPitchTuner.h"/>
+      <FILE id="AIPitchTuner.cpp" name="AIPitchTuner.cpp" compile="1" resource="0"
+            file="Source/AIPitchTuner.cpp"/>
+      <FILE id="VocalEffects.h" name="VocalEffects.h" compile="0" resource="0"
+            file="Source/VocalEffects.h"/>
+      <FILE id="VocalEffects.cpp" name="VocalEffects.cpp" compile="1" resource="0"
+            file="Source/VocalEffects.cpp"/>
+    </GROUP>
+  </MAINGROUP>
+  <EXPORTFORMATS>
+    <VS2022 targetFolder="Builds/VisualStudio2022" externalLibraries="" extraDefs=""
+            extraCompilerFlags="" extraLinkerFlags="" extraPreprocessorDefs=""
+            winWarningLevel="4" generateManifest="1" winArchitecture="x64"
+            enablePluginBinaryCopyStep="1"/>
+    <XCODE_MAC targetFolder="Builds/MacOSX" osxSDK="default" osxCompatibility="10.15"
+               osxArchitecture="x86_64" osxDeploymentTarget="10.15" osxUseModernOSXSDK="1"
+               enablePluginBinaryCopyStep="1"/>
+  </EXPORTFORMATS>
+  <MODULES>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_plugin_client" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_gui_extra" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+  </MODULES>
+  <LIVE_SETTINGS>
+    <WINDOWS/>
+    <OSX/>
+  </LIVE_SETTINGS>
+</JUCERPROJECT>
