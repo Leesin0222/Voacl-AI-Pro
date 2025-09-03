@@ -17,7 +17,8 @@
 class VocalAIProEditor : public juce::AudioProcessorEditor,
                          public juce::Timer,
                          public juce::Button::Listener,
-                         public juce::Slider::Listener
+                         public juce::Slider::Listener,
+                         public juce::ComboBox::Listener
 {
 public:
     //==============================================================================
@@ -32,6 +33,7 @@ public:
     //==============================================================================
     void buttonClicked (juce::Button* button) override;
     void sliderValueChanged (juce::Slider* slider) override;
+    void comboBoxChanged (juce::ComboBox* comboBox) override;
 
 private:
     //==============================================================================

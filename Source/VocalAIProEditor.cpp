@@ -98,11 +98,22 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     setupGroupComponent(presetGroup, "Presets");
     addAndMakeVisible(presetGroup);
     
-    presetComboBox.addItem("Default", 1);
-    presetComboBox.addItem("Vocal Doubling", 2);
-    presetComboBox.addItem("Harmony", 3);
-    presetComboBox.addItem("Reverb", 4);
-    presetComboBox.addItem("Delay", 5);
+    // GOD Presets - 음악 제작자를 위한 최적화된 설정들
+    presetComboBox.addItem("🔥 GOD - Perfect Vocal", 1);
+    presetComboBox.addItem("🎤 GOD - Studio Master", 2);
+    presetComboBox.addItem("🎵 GOD - Pop Hit Maker", 3);
+    presetComboBox.addItem("🎸 GOD - Rock Legend", 4);
+    presetComboBox.addItem("🎹 GOD - R&B Smooth", 5);
+    presetComboBox.addItem("🎧 GOD - Trap Vocal", 6);
+    presetComboBox.addItem("🎭 GOD - Live Performance", 7);
+    presetComboBox.addItem("🎪 GOD - Creative Chaos", 8);
+    
+    // 기본 프리셋들
+    presetComboBox.addItem("Default", 9);
+    presetComboBox.addItem("Vocal Doubling", 10);
+    presetComboBox.addItem("Harmony", 11);
+    presetComboBox.addItem("Reverb", 12);
+    presetComboBox.addItem("Delay", 13);
     presetComboBox.setSelectedId(1);
     addAndMakeVisible(presetComboBox);
     
@@ -196,6 +207,7 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     inputGainSlider.addListener(this);
     outputGainSlider.addListener(this);
     bypassButton.addListener(this);
+    presetComboBox.addListener(this);
 }
 
 VocalAIProEditor::~VocalAIProEditor()
@@ -365,6 +377,15 @@ void VocalAIProEditor::sliderValueChanged(juce::Slider* slider)
     // Parameter changes are handled by attachments
 }
 
+void VocalAIProEditor::comboBoxChanged(juce::ComboBox* comboBox)
+{
+    if (comboBox == &presetComboBox)
+    {
+        int selectedId = presetComboBox.getSelectedId();
+        applyPreset(selectedId);
+    }
+}
+
 //==============================================================================
 void VocalAIProEditor::setupSlider(juce::Slider& slider, const juce::String& suffix)
 {
@@ -440,9 +461,109 @@ void VocalAIProEditor::deleteCurrentPreset()
 
 void VocalAIProEditor::applyPreset(int presetIndex)
 {
-    juce::ignoreUnused(presetIndex);
-    // Apply preset parameter values
-    // This would load specific parameter combinations
+    // GOD Presets - 음악 제작자를 위한 최적화된 설정들
+    switch (presetIndex)
+    {
+        case 1: // 🔥 GOD - Perfect Vocal
+            pitchCorrectionSlider.setValue(85.0);      // 강력한 피치 보정
+            pitchSpeedSlider.setValue(70.0);           // 빠른 반응
+            reverbAmountSlider.setValue(25.0);         // 적당한 공간감
+            delayTimeSlider.setValue(200.0);           // 짧은 딜레이
+            delayFeedbackSlider.setValue(20.0);        // 낮은 피드백
+            harmonyAmountSlider.setValue(15.0);        // 미묘한 하모니
+            harmonyVoicesSlider.setValue(2);           // 2개 보이스
+            inputGainSlider.setValue(2.0);             // 약간의 부스트
+            outputGainSlider.setValue(0.0);            // 출력 게인 0
+            break;
+            
+        case 2: // 🎤 GOD - Studio Master
+            pitchCorrectionSlider.setValue(95.0);      // 최고 수준 피치 보정
+            pitchSpeedSlider.setValue(80.0);           // 매우 빠른 반응
+            reverbAmountSlider.setValue(35.0);         // 스튜디오 리버브
+            delayTimeSlider.setValue(300.0);           // 중간 딜레이
+            delayFeedbackSlider.setValue(25.0);        // 적당한 피드백
+            harmonyAmountSlider.setValue(20.0);        // 부드러운 하모니
+            harmonyVoicesSlider.setValue(3);           // 3개 보이스
+            inputGainSlider.setValue(1.5);             // 미묘한 부스트
+            outputGainSlider.setValue(-1.0);           // 약간의 출력 감소
+            break;
+            
+        case 3: // 🎵 GOD - Pop Hit Maker
+            pitchCorrectionSlider.setValue(90.0);      // 팝 스타일 피치 보정
+            pitchSpeedSlider.setValue(75.0);           // 빠른 반응
+            reverbAmountSlider.setValue(40.0);         // 팝 리버브
+            delayTimeSlider.setValue(250.0);           // 팝 딜레이
+            delayFeedbackSlider.setValue(30.0);        // 팝 피드백
+            harmonyAmountSlider.setValue(45.0);        // 강한 하모니
+            harmonyVoicesSlider.setValue(4);           // 4개 보이스
+            inputGainSlider.setValue(3.0);             // 팝 부스트
+            outputGainSlider.setValue(0.5);            // 약간의 출력 부스트
+            break;
+            
+        case 4: // 🎸 GOD - Rock Legend
+            pitchCorrectionSlider.setValue(60.0);      // 자연스러운 피치 보정
+            pitchSpeedSlider.setValue(50.0);           // 중간 반응
+            reverbAmountSlider.setValue(60.0);         // 강한 리버브
+            delayTimeSlider.setValue(500.0);           // 록 딜레이
+            delayFeedbackSlider.setValue(40.0);        // 록 피드백
+            harmonyAmountSlider.setValue(30.0);        // 록 하모니
+            harmonyVoicesSlider.setValue(3);           // 3개 보이스
+            inputGainSlider.setValue(4.0);             // 록 부스트
+            outputGainSlider.setValue(1.0);            // 출력 부스트
+            break;
+            
+        case 5: // 🎹 GOD - R&B Smooth
+            pitchCorrectionSlider.setValue(80.0);      // 부드러운 피치 보정
+            pitchSpeedSlider.setValue(60.0);           // 부드러운 반응
+            reverbAmountSlider.setValue(50.0);         // R&B 리버브
+            delayTimeSlider.setValue(400.0);           // R&B 딜레이
+            delayFeedbackSlider.setValue(35.0);        // R&B 피드백
+            harmonyAmountSlider.setValue(55.0);        // 강한 하모니
+            harmonyVoicesSlider.setValue(5);           // 5개 보이스
+            inputGainSlider.setValue(2.5);             // R&B 부스트
+            outputGainSlider.setValue(0.0);            // 출력 게인 0
+            break;
+            
+        case 6: // 🎧 GOD - Trap Vocal
+            pitchCorrectionSlider.setValue(70.0);      // 트랩 피치 보정
+            pitchSpeedSlider.setValue(65.0);           // 트랩 반응
+            reverbAmountSlider.setValue(70.0);         // 트랩 리버브
+            delayTimeSlider.setValue(150.0);           // 트랩 딜레이
+            delayFeedbackSlider.setValue(50.0);        // 트랩 피드백
+            harmonyAmountSlider.setValue(25.0);        // 트랩 하모니
+            harmonyVoicesSlider.setValue(2);           // 2개 보이스
+            inputGainSlider.setValue(5.0);             // 트랩 부스트
+            outputGainSlider.setValue(2.0);            // 강한 출력 부스트
+            break;
+            
+        case 7: // 🎭 GOD - Live Performance
+            pitchCorrectionSlider.setValue(75.0);      // 라이브 피치 보정
+            pitchSpeedSlider.setValue(85.0);           // 매우 빠른 반응
+            reverbAmountSlider.setValue(30.0);         // 라이브 리버브
+            delayTimeSlider.setValue(200.0);           // 라이브 딜레이
+            delayFeedbackSlider.setValue(15.0);        // 낮은 피드백
+            harmonyAmountSlider.setValue(10.0);        // 미묘한 하모니
+            harmonyVoicesSlider.setValue(2);           // 2개 보이스
+            inputGainSlider.setValue(1.0);             // 라이브 부스트
+            outputGainSlider.setValue(0.0);            // 출력 게인 0
+            break;
+            
+        case 8: // 🎪 GOD - Creative Chaos
+            pitchCorrectionSlider.setValue(50.0);      // 창의적 피치 보정
+            pitchSpeedSlider.setValue(40.0);           // 창의적 반응
+            reverbAmountSlider.setValue(80.0);         // 창의적 리버브
+            delayTimeSlider.setValue(800.0);           // 창의적 딜레이
+            delayFeedbackSlider.setValue(60.0);        // 창의적 피드백
+            harmonyAmountSlider.setValue(70.0);        // 창의적 하모니
+            harmonyVoicesSlider.setValue(6);           // 6개 보이스
+            inputGainSlider.setValue(3.5);             // 창의적 부스트
+            outputGainSlider.setValue(1.5);            // 창의적 출력 부스트
+            break;
+            
+        default:
+            // 기본 프리셋들
+            break;
+    }
 }
 
 void VocalAIProEditor::updateVisualFeedback()
