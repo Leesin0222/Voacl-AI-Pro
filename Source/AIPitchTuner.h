@@ -3,6 +3,7 @@
 #include <JuceHeader.h>
 #include <vector>
 #include <complex>
+#include <memory>
 
 //==============================================================================
 /**

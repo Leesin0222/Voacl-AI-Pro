@@ -364,7 +364,7 @@ void AIPitchTuner::processPitchShiftFFT(float* samples, int numSamples, float pi
         
         // Perform FFT (using JUCE's FFT)
         juce::dsp::FFT fft(static_cast<int>(std::log2(fftSize)));
-        fft.performFrequencyOnlyForwardTransform(fftBuffer.data());
+        fft.performRealOnlyForwardTransform(fftBuffer.data());
         
         // Phase vocoder processing
         static std::vector<float> lastPhase(fftSize / 2 + 1, 0.0f);

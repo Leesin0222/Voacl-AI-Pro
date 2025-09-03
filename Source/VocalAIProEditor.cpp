@@ -179,6 +179,11 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
         audioProcessor.getValueTreeState(), "bypass", bypassButton);
     
     //==============================================================================
+    // Initialize Spectrum Analyzer
+    spectrumAnalyzer = std::make_unique<SpectrumAnalyzer>();
+    addAndMakeVisible(spectrumAnalyzer.get());
+    
+    //==============================================================================
     // Add listeners
     pitchCorrectionSlider.addListener(this);
     pitchSpeedSlider.addListener(this);
@@ -330,6 +335,10 @@ void VocalAIProEditor::resized()
     currentPitchLabel.setBounds(visualContent.removeFromTop(25));
     pitchConfidenceLabel.setBounds(visualContent.removeFromTop(25));
     statusLabel.setBounds(visualContent.removeFromTop(25));
+    
+    // Spectrum analyzer
+    if (spectrumAnalyzer)
+        spectrumAnalyzer->setBounds(visualContent);
 }
 
 void VocalAIProEditor::timerCallback()
@@ -465,4 +474,67 @@ void VocalAIProEditor::updatePresetComboBox()
 {
     // Update preset combo box with available presets
     // This would load from file or create default presets
+}
+
+//==============================================================================
+// SpectrumAnalyzer Implementation
+VocalAIProEditor::SpectrumAnalyzer::SpectrumAnalyzer()
+{
+    spectrumData.resize(numBins, 0.0f);
+    smoothedSpectrum.resize(numBins, 0.0f);
+    startTimer(30); // 30 FPS
+}
+
+VocalAIProEditor::SpectrumAnalyzer::~SpectrumAnalyzer()
+{
+    stopTimer();
+}
+
+void VocalAIProEditor::SpectrumAnalyzer::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds().toFloat();
+    
+    // Background
+    g.setColour(juce::Colour(0xff2c3e50));
+    g.fillRoundedRectangle(bounds, 8.0f);
+    
+    // Border
+    g.setColour(juce::Colour(0xff3498db));
+    g.drawRoundedRectangle(bounds, 8.0f, 1.0f);
+    
+    // Draw spectrum bars
+    const float barWidth = bounds.getWidth() / numBins;
+    const float maxHeight = bounds.getHeight() - 20.0f;
+    
+    for (int i = 0; i < numBins; ++i)
+    {
+        const float barHeight = smoothedSpectrum[i] * maxHeight;
+        const float x = bounds.getX() + i * barWidth;
+        const float y = bounds.getBottom() - barHeight - 10.0f;
+        
+        // Gradient for each bar
+        juce::ColourGradient gradient(juce::Colour(0xffe74c3c), x, y,
+                                     juce::Colour(0xff3498db), x, y + barHeight, false);
+        g.setGradientFill(gradient);
+        g.fillRoundedRectangle(x + 1, y, barWidth - 2, barHeight, 2.0f);
+    }
+}
+
+void VocalAIProEditor::SpectrumAnalyzer::timerCallback()
+{
+    repaint();
+}
+
+void VocalAIProEditor::SpectrumAnalyzer::updateSpectrum(const float* magnitudes, int numBins)
+{
+    if (numBins != this->numBins) return;
+    
+    // Update spectrum data with smoothing
+    for (int i = 0; i < numBins; ++i)
+    {
+        spectrumData[i] = juce::jlimit(0.0f, 1.0f, magnitudes[i]);
+        
+        // Apply smoothing
+        smoothedSpectrum[i] = smoothedSpectrum[i] * 0.8f + spectrumData[i] * 0.2f;
+    }
 }
