@@ -3,6 +3,10 @@
 #include <JuceHeader.h>
 #include <memory>
 
+// Forward declarations
+class AIPitchTuner;
+class VocalEffects;
+
 //==============================================================================
 /**
     AI-Powered Vocal Effects Suite Plugin
@@ -12,7 +16,7 @@
     - Real-time Processing
     - Preset System
 */
-class VocalAIProPlugin : public juce::AudioProcessor
+class VocalAIProPlugin : public juce::AudioProcessor, public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     //==============================================================================
@@ -58,21 +62,25 @@ public:
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
     // AI Pitch Tuning Parameters
-    juce::AudioParameterFloat* pitchCorrectionParam;
-    juce::AudioParameterFloat* pitchSpeedParam;
-    juce::AudioParameterBool* pitchCorrectionEnabledParam;
+    std::atomic<float>* pitchCorrectionParam;
+    std::atomic<float>* pitchSpeedParam;
+    std::atomic<float>* pitchCorrectionEnabledParam;
     
     // Vocal Effects Parameters
-    juce::AudioParameterFloat* reverbAmountParam;
-    juce::AudioParameterFloat* delayTimeParam;
-    juce::AudioParameterFloat* delayFeedbackParam;
-    juce::AudioParameterFloat* harmonyAmountParam;
-    juce::AudioParameterInt* harmonyVoicesParam;
+    std::atomic<float>* reverbAmountParam;
+    std::atomic<float>* delayTimeParam;
+    std::atomic<float>* delayFeedbackParam;
+    std::atomic<float>* harmonyAmountParam;
+    std::atomic<float>* harmonyVoicesParam;
     
     // Master Parameters
-    juce::AudioParameterFloat* inputGainParam;
-    juce::AudioParameterFloat* outputGainParam;
-    juce::AudioParameterBool* bypassParam;
+    std::atomic<float>* inputGainParam;
+    std::atomic<float>* outputGainParam;
+    std::atomic<float>* bypassParam;
+    
+    // Getter functions for editor access
+    AIPitchTuner* getAIPitchTuner() const { return aiPitchTuner.get(); }
+    VocalEffects* getVocalEffects() const { return vocalEffects.get(); }
 
 private:
     //==============================================================================
@@ -98,15 +106,14 @@ private:
     int currentBlockSize = 512;
     bool isInitialized = false;
     
-    // Getter functions for editor access
-    AIPitchTuner* getAIPitchTuner() const { return aiPitchTuner.get(); }
-    VocalEffects* getVocalEffects() const { return vocalEffects.get(); }
+    //==============================================================================
+    // AudioProcessorValueTreeState::Listener
+    void parameterChanged(const juce::String& parameterID, float newValue) override;
 
 private:
     //==============================================================================
     // Parameter Update Handling
     void updateParameters();
-    void parameterChanged(const juce::String& parameterID, float newValue);
     
     // Parameter Validation
     bool validateParameter(const juce::String& parameterID, float value);

@@ -1,4 +1,5 @@
 #include "VocalAIProPlugin.h"
+#include "VocalAIProEditor.h"
 #include "AIPitchTuner.h"
 #include "VocalEffects.h"
 
@@ -281,7 +282,7 @@ void VocalAIProPlugin::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
     updateParameters();
     
     // Bypass check
-    if (*bypassParam)
+    if (bypassParam->load() > 0.5f)
     {
         return;
     }
@@ -290,14 +291,17 @@ void VocalAIProPlugin::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
     juce::dsp::AudioBlock<float> block(buffer);
     juce::dsp::ProcessContextReplacing<float> context(block);
     
-    // Apply input gain
-    inputGain.process(context);
+    // Apply input gain with safety check
+    if (inputGainSmoother.getCurrentValue() < 10.0f) // Prevent excessive gain
+    {
+        inputGain.process(context);
+    }
     
     // Store dry signal for dry/wet mixing
     auto dryBlock = block;
     
     // AI Pitch Tuning
-    if (aiPitchTuner && *pitchCorrectionEnabledParam)
+    if (aiPitchTuner && pitchCorrectionEnabledParam->load() > 0.5f)
     {
         aiPitchTuner->processBlock(buffer, midiMessages);
     }
@@ -308,11 +312,14 @@ void VocalAIProPlugin::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
         vocalEffects->processBlock(buffer, midiMessages);
     }
     
-    // Apply output gain
-    outputGain.process(context);
+    // Apply output gain with safety check
+    if (outputGainSmoother.getCurrentValue() < 10.0f) // Prevent excessive gain
+    {
+        outputGain.process(context);
+    }
     
-    // Apply dry/wet mix
-    dryWetMixer.setWetMixProportion(1.0f); // Full wet for now
+    // Apply dry/wet mix (safe 50% wet to prevent feedback)
+    dryWetMixer.setWetMixProportion(0.5f);
     dryWetMixer.mixWetSamples(block);
 }
 
@@ -349,11 +356,13 @@ void VocalAIProPlugin::updateParameters()
 {
     if (!isInitialized) return;
     
-    // Update smoothed parameters for anti-aliasing
-    inputGainSmoother.setTargetValue(juce::Decibels::decibelsToGain(*inputGainParam));
-    outputGainSmoother.setTargetValue(juce::Decibels::decibelsToGain(*outputGainParam));
-    reverbAmountSmoother.setTargetValue(*reverbAmountParam / 100.0f);
-    delayTimeSmoother.setTargetValue(*delayTimeParam);
+    // Update smoothed parameters for anti-aliasing with safety limits
+    float inputGainDb = juce::jlimit(-24.0f, 12.0f, inputGainParam->load());
+    float outputGainDb = juce::jlimit(-24.0f, 12.0f, outputGainParam->load());
+    inputGainSmoother.setTargetValue(juce::Decibels::decibelsToGain(inputGainDb));
+    outputGainSmoother.setTargetValue(juce::Decibels::decibelsToGain(outputGainDb));
+    reverbAmountSmoother.setTargetValue(reverbAmountParam->load() / 100.0f);
+    delayTimeSmoother.setTargetValue(delayTimeParam->load());
     
     // Update input/output gain with smoothing
     inputGain.setGainLinear(inputGainSmoother.getNextValue());
@@ -362,17 +371,17 @@ void VocalAIProPlugin::updateParameters()
     // Update AI components
     if (aiPitchTuner)
     {
-        aiPitchTuner->setPitchCorrection(*pitchCorrectionParam / 100.0f);
-        aiPitchTuner->setPitchSpeed(*pitchSpeedParam / 100.0f);
+        aiPitchTuner->setPitchCorrection(pitchCorrectionParam->load() / 100.0f);
+        aiPitchTuner->setPitchSpeed(pitchSpeedParam->load() / 100.0f);
     }
     
     if (vocalEffects)
     {
         vocalEffects->setReverbAmount(reverbAmountSmoother.getNextValue());
         vocalEffects->setDelayTime(delayTimeSmoother.getNextValue());
-        vocalEffects->setDelayFeedback(*delayFeedbackParam / 100.0f);
-        vocalEffects->setHarmonyAmount(*harmonyAmountParam / 100.0f);
-        vocalEffects->setHarmonyVoices(*harmonyVoicesParam);
+        vocalEffects->setDelayFeedback(delayFeedbackParam->load() / 100.0f);
+        vocalEffects->setHarmonyAmount(harmonyAmountParam->load() / 100.0f);
+        vocalEffects->setHarmonyVoices(static_cast<int>(harmonyVoicesParam->load()));
     }
 }
 
@@ -400,7 +409,7 @@ bool VocalAIProPlugin::validateParameter(const juce::String& parameterID, float 
     }
     
     if (parameterID == "delayFeedback") {
-        return value >= 0.0f && value <= 95.0f;
+        return value >= 0.0f && value <= 80.0f; // Reduced max to prevent feedback
     }
     
     if (parameterID == "harmonyVoices") {
@@ -408,7 +417,7 @@ bool VocalAIProPlugin::validateParameter(const juce::String& parameterID, float 
     }
     
     if (parameterID == "inputGain" || parameterID == "outputGain") {
-        return value >= -24.0f && value <= 24.0f;
+        return value >= -24.0f && value <= 12.0f; // Reduced max to prevent clipping
     }
     
     return true; // Default validation passed

@@ -90,7 +90,6 @@ private:
     std::vector<float> tempBuffer; // Reusable temporary buffer
     int pitchShiftBufferSize = 4096;
     int fftSize = 2048;
-    int hopSize = 512;
     float currentPitchRatio = 1.0f;
     float targetPitchRatio = 1.0f;
     

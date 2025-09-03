@@ -1,4 +1,5 @@
 #include "VocalAIProEditor.h"
+#include "AIPitchTuner.h"
 
 //==============================================================================
 VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
@@ -98,17 +99,17 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     setupGroupComponent(presetGroup, "Presets");
     addAndMakeVisible(presetGroup);
     
-    // GOD Presets - 음악 제작자를 위한 최적화된 설정들
-    presetComboBox.addItem("🔥 GOD - Perfect Vocal", 1);
-    presetComboBox.addItem("🎤 GOD - Studio Master", 2);
-    presetComboBox.addItem("🎵 GOD - Pop Hit Maker", 3);
-    presetComboBox.addItem("🎸 GOD - Rock Legend", 4);
-    presetComboBox.addItem("🎹 GOD - R&B Smooth", 5);
-    presetComboBox.addItem("🎧 GOD - Trap Vocal", 6);
-    presetComboBox.addItem("🎭 GOD - Live Performance", 7);
-    presetComboBox.addItem("🎪 GOD - Creative Chaos", 8);
+    // Professional Vocal Presets - Optimized for Music Producers
+    presetComboBox.addItem("Perfect Vocal", 1);
+    presetComboBox.addItem("Studio Master", 2);
+    presetComboBox.addItem("Pop Hit Maker", 3);
+    presetComboBox.addItem("Rock Legend", 4);
+    presetComboBox.addItem("R&B Smooth", 5);
+    presetComboBox.addItem("Trap Vocal", 6);
+    presetComboBox.addItem("Live Performance", 7);
+    presetComboBox.addItem("Creative Chaos", 8);
     
-    // 기본 프리셋들
+    // Basic Presets
     presetComboBox.addItem("Default", 9);
     presetComboBox.addItem("Vocal Doubling", 10);
     presetComboBox.addItem("Harmony", 11);
@@ -419,10 +420,10 @@ void VocalAIProEditor::setupSlider(juce::Slider& slider, const juce::String& suf
 
 void VocalAIProEditor::setupButton(juce::Button& button)
 {
-    button.setColour(juce::Button::buttonColourId, juce::Colour(0xff34495e));
-    button.setColour(juce::Button::buttonOnColourId, juce::Colour(0xff4a90e2));
-    button.setColour(juce::Button::textColourOnId, juce::Colour(0xffecf0f1));
-    button.setColour(juce::Button::textColourOffId, juce::Colour(0xffbdc3c7));
+    button.setColour(juce::TextButton::buttonColourId, juce::Colour(0xff34495e));
+    button.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xff4a90e2));
+    button.setColour(juce::TextButton::textColourOnId, juce::Colour(0xffecf0f1));
+    button.setColour(juce::TextButton::textColourOffId, juce::Colour(0xffbdc3c7));
 }
 
 void VocalAIProEditor::setupLabel(juce::Label& label, const juce::String& text)
@@ -439,7 +440,7 @@ void VocalAIProEditor::setupGroupComponent(juce::GroupComponent& group, const ju
     group.setText(text);
     group.setColour(juce::GroupComponent::outlineColourId, juce::Colour(0xff7f8c8d));
     group.setColour(juce::GroupComponent::textColourId, juce::Colour(0xff4a90e2));
-    group.setFont(juce::Font(14.0f, juce::Font::bold));
+    // JUCE 8에서는 setFont가 제거되었으므로 제거
 }
 
 //==============================================================================
@@ -462,114 +463,133 @@ void VocalAIProEditor::deleteCurrentPreset()
     int selectedId = presetComboBox.getSelectedId();
     if (selectedId > 1) // Don't delete default preset
     {
-        presetComboBox.removeItem(presetComboBox.getSelectedItemIndex());
-        presetComboBox.setSelectedId(1); // Select default
+        // JUCE 8에서는 removeItem이 제거되었으므로 clear하고 다시 추가
+        int currentIndex = presetComboBox.getSelectedItemIndex();
+        if (currentIndex >= 0)
+        {
+            // 현재 선택된 항목을 제외하고 모든 항목을 다시 추가
+            juce::StringArray items;
+            for (int i = 0; i < presetComboBox.getNumItems(); ++i)
+            {
+                if (i != currentIndex)
+                {
+                    items.add(presetComboBox.getItemText(i));
+                }
+            }
+            
+            presetComboBox.clear();
+            for (int i = 0; i < items.size(); ++i)
+            {
+                presetComboBox.addItem(items[i], i + 1);
+            }
+            presetComboBox.setSelectedId(1); // Select default
+        }
     }
 }
 
 void VocalAIProEditor::applyPreset(int presetIndex)
 {
-    // GOD Presets - 음악 제작자를 위한 최적화된 설정들
+    // Professional Vocal Presets - Optimized for Music Producers
     switch (presetIndex)
     {
-        case 1: // 🔥 GOD - Perfect Vocal
-            pitchCorrectionSlider.setValue(85.0);      // 강력한 피치 보정
-            pitchSpeedSlider.setValue(70.0);           // 빠른 반응
-            reverbAmountSlider.setValue(25.0);         // 적당한 공간감
-            delayTimeSlider.setValue(200.0);           // 짧은 딜레이
-            delayFeedbackSlider.setValue(20.0);        // 낮은 피드백
-            harmonyAmountSlider.setValue(15.0);        // 미묘한 하모니
-            harmonyVoicesSlider.setValue(2);           // 2개 보이스
-            inputGainSlider.setValue(2.0);             // 약간의 부스트
-            outputGainSlider.setValue(0.0);            // 출력 게인 0
+        case 1: // Perfect Vocal
+            pitchCorrectionSlider.setValue(85.0);      // Strong pitch correction
+            pitchSpeedSlider.setValue(70.0);           // Fast response
+            reverbAmountSlider.setValue(25.0);         // Moderate space
+            delayTimeSlider.setValue(200.0);           // Short delay
+            delayFeedbackSlider.setValue(20.0);        // Low feedback
+            harmonyAmountSlider.setValue(15.0);        // Subtle harmony
+            harmonyVoicesSlider.setValue(2);           // 2 voices
+            inputGainSlider.setValue(2.0);             // Slight boost
+            outputGainSlider.setValue(0.0);            // Output gain 0
             break;
             
-        case 2: // 🎤 GOD - Studio Master
-            pitchCorrectionSlider.setValue(95.0);      // 최고 수준 피치 보정
-            pitchSpeedSlider.setValue(80.0);           // 매우 빠른 반응
-            reverbAmountSlider.setValue(35.0);         // 스튜디오 리버브
-            delayTimeSlider.setValue(300.0);           // 중간 딜레이
-            delayFeedbackSlider.setValue(25.0);        // 적당한 피드백
-            harmonyAmountSlider.setValue(20.0);        // 부드러운 하모니
-            harmonyVoicesSlider.setValue(3);           // 3개 보이스
-            inputGainSlider.setValue(1.5);             // 미묘한 부스트
-            outputGainSlider.setValue(-1.0);           // 약간의 출력 감소
+        case 2: // Studio Master
+            pitchCorrectionSlider.setValue(95.0);      // Maximum pitch correction
+            pitchSpeedSlider.setValue(80.0);           // Very fast response
+            reverbAmountSlider.setValue(35.0);         // Studio reverb
+            delayTimeSlider.setValue(300.0);           // Medium delay
+            delayFeedbackSlider.setValue(25.0);        // Moderate feedback
+            harmonyAmountSlider.setValue(20.0);        // Smooth harmony
+            harmonyVoicesSlider.setValue(3);           // 3 voices
+            inputGainSlider.setValue(1.5);             // Subtle boost
+            outputGainSlider.setValue(-1.0);           // Slight output reduction
             break;
             
-        case 3: // 🎵 GOD - Pop Hit Maker
-            pitchCorrectionSlider.setValue(90.0);      // 팝 스타일 피치 보정
-            pitchSpeedSlider.setValue(75.0);           // 빠른 반응
-            reverbAmountSlider.setValue(40.0);         // 팝 리버브
-            delayTimeSlider.setValue(250.0);           // 팝 딜레이
-            delayFeedbackSlider.setValue(30.0);        // 팝 피드백
-            harmonyAmountSlider.setValue(45.0);        // 강한 하모니
-            harmonyVoicesSlider.setValue(4);           // 4개 보이스
-            inputGainSlider.setValue(3.0);             // 팝 부스트
-            outputGainSlider.setValue(0.5);            // 약간의 출력 부스트
+        case 3: // Pop Hit Maker
+            pitchCorrectionSlider.setValue(90.0);      // Pop style pitch correction
+            pitchSpeedSlider.setValue(75.0);           // Fast response
+            reverbAmountSlider.setValue(40.0);         // Pop reverb
+            delayTimeSlider.setValue(250.0);           // Pop delay
+            delayFeedbackSlider.setValue(30.0);        // Pop feedback
+            harmonyAmountSlider.setValue(45.0);        // Strong harmony
+            harmonyVoicesSlider.setValue(4);           // 4 voices
+            inputGainSlider.setValue(3.0);             // Pop boost
+            outputGainSlider.setValue(0.5);            // Slight output boost
             break;
             
-        case 4: // 🎸 GOD - Rock Legend
-            pitchCorrectionSlider.setValue(60.0);      // 자연스러운 피치 보정
-            pitchSpeedSlider.setValue(50.0);           // 중간 반응
-            reverbAmountSlider.setValue(60.0);         // 강한 리버브
-            delayTimeSlider.setValue(500.0);           // 록 딜레이
-            delayFeedbackSlider.setValue(40.0);        // 록 피드백
-            harmonyAmountSlider.setValue(30.0);        // 록 하모니
-            harmonyVoicesSlider.setValue(3);           // 3개 보이스
-            inputGainSlider.setValue(4.0);             // 록 부스트
-            outputGainSlider.setValue(1.0);            // 출력 부스트
+        case 4: // Rock Legend
+            pitchCorrectionSlider.setValue(60.0);      // Natural pitch correction
+            pitchSpeedSlider.setValue(50.0);           // Medium response
+            reverbAmountSlider.setValue(60.0);         // Strong reverb
+            delayTimeSlider.setValue(500.0);           // Rock delay
+            delayFeedbackSlider.setValue(40.0);        // Rock feedback
+            harmonyAmountSlider.setValue(30.0);        // Rock harmony
+            harmonyVoicesSlider.setValue(3);           // 3 voices
+            inputGainSlider.setValue(4.0);             // Rock boost
+            outputGainSlider.setValue(1.0);            // Output boost
             break;
             
-        case 5: // 🎹 GOD - R&B Smooth
-            pitchCorrectionSlider.setValue(80.0);      // 부드러운 피치 보정
-            pitchSpeedSlider.setValue(60.0);           // 부드러운 반응
-            reverbAmountSlider.setValue(50.0);         // R&B 리버브
-            delayTimeSlider.setValue(400.0);           // R&B 딜레이
-            delayFeedbackSlider.setValue(35.0);        // R&B 피드백
-            harmonyAmountSlider.setValue(55.0);        // 강한 하모니
-            harmonyVoicesSlider.setValue(5);           // 5개 보이스
-            inputGainSlider.setValue(2.5);             // R&B 부스트
-            outputGainSlider.setValue(0.0);            // 출력 게인 0
+        case 5: // R&B Smooth
+            pitchCorrectionSlider.setValue(80.0);      // Smooth pitch correction
+            pitchSpeedSlider.setValue(60.0);           // Smooth response
+            reverbAmountSlider.setValue(50.0);         // R&B reverb
+            delayTimeSlider.setValue(400.0);           // R&B delay
+            delayFeedbackSlider.setValue(35.0);        // R&B feedback
+            harmonyAmountSlider.setValue(55.0);        // Strong harmony
+            harmonyVoicesSlider.setValue(5);           // 5 voices
+            inputGainSlider.setValue(2.5);             // R&B boost
+            outputGainSlider.setValue(0.0);            // Output gain 0
             break;
             
-        case 6: // 🎧 GOD - Trap Vocal
-            pitchCorrectionSlider.setValue(70.0);      // 트랩 피치 보정
-            pitchSpeedSlider.setValue(65.0);           // 트랩 반응
-            reverbAmountSlider.setValue(70.0);         // 트랩 리버브
-            delayTimeSlider.setValue(150.0);           // 트랩 딜레이
-            delayFeedbackSlider.setValue(50.0);        // 트랩 피드백
-            harmonyAmountSlider.setValue(25.0);        // 트랩 하모니
-            harmonyVoicesSlider.setValue(2);           // 2개 보이스
-            inputGainSlider.setValue(5.0);             // 트랩 부스트
-            outputGainSlider.setValue(2.0);            // 강한 출력 부스트
+        case 6: // Trap Vocal
+            pitchCorrectionSlider.setValue(70.0);      // Trap pitch correction
+            pitchSpeedSlider.setValue(65.0);           // Trap response
+            reverbAmountSlider.setValue(70.0);         // Trap reverb
+            delayTimeSlider.setValue(150.0);           // Trap delay
+            delayFeedbackSlider.setValue(40.0);        // Safe feedback
+            harmonyAmountSlider.setValue(25.0);        // Trap harmony
+            harmonyVoicesSlider.setValue(2);           // 2 voices
+            inputGainSlider.setValue(3.0);             // Safe boost
+            outputGainSlider.setValue(1.0);            // Safe output boost
             break;
             
-        case 7: // 🎭 GOD - Live Performance
-            pitchCorrectionSlider.setValue(75.0);      // 라이브 피치 보정
-            pitchSpeedSlider.setValue(85.0);           // 매우 빠른 반응
-            reverbAmountSlider.setValue(30.0);         // 라이브 리버브
-            delayTimeSlider.setValue(200.0);           // 라이브 딜레이
-            delayFeedbackSlider.setValue(15.0);        // 낮은 피드백
-            harmonyAmountSlider.setValue(10.0);        // 미묘한 하모니
-            harmonyVoicesSlider.setValue(2);           // 2개 보이스
-            inputGainSlider.setValue(1.0);             // 라이브 부스트
-            outputGainSlider.setValue(0.0);            // 출력 게인 0
+        case 7: // Live Performance
+            pitchCorrectionSlider.setValue(75.0);      // Live pitch correction
+            pitchSpeedSlider.setValue(85.0);           // Very fast response
+            reverbAmountSlider.setValue(30.0);         // Live reverb
+            delayTimeSlider.setValue(200.0);           // Live delay
+            delayFeedbackSlider.setValue(15.0);        // Low feedback
+            harmonyAmountSlider.setValue(10.0);        // Subtle harmony
+            harmonyVoicesSlider.setValue(2);           // 2 voices
+            inputGainSlider.setValue(1.0);             // Live boost
+            outputGainSlider.setValue(0.0);            // Output gain 0
             break;
             
-        case 8: // 🎪 GOD - Creative Chaos
-            pitchCorrectionSlider.setValue(50.0);      // 창의적 피치 보정
-            pitchSpeedSlider.setValue(40.0);           // 창의적 반응
-            reverbAmountSlider.setValue(80.0);         // 창의적 리버브
-            delayTimeSlider.setValue(800.0);           // 창의적 딜레이
-            delayFeedbackSlider.setValue(60.0);        // 창의적 피드백
-            harmonyAmountSlider.setValue(70.0);        // 창의적 하모니
-            harmonyVoicesSlider.setValue(6);           // 6개 보이스
-            inputGainSlider.setValue(3.5);             // 창의적 부스트
-            outputGainSlider.setValue(1.5);            // 창의적 출력 부스트
+        case 8: // Creative Chaos
+            pitchCorrectionSlider.setValue(50.0);      // Creative pitch correction
+            pitchSpeedSlider.setValue(40.0);           // Creative response
+            reverbAmountSlider.setValue(60.0);         // Safe reverb
+            delayTimeSlider.setValue(600.0);           // Safe delay
+            delayFeedbackSlider.setValue(40.0);        // Safe feedback
+            harmonyAmountSlider.setValue(50.0);        // Safe harmony
+            harmonyVoicesSlider.setValue(4);           // Safe voice count
+            inputGainSlider.setValue(2.0);             // Safe boost
+            outputGainSlider.setValue(0.5);            // Safe output boost
             break;
             
         default:
-            // 기본 프리셋들
+            // Default presets
             break;
     }
 }
