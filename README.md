@@ -42,6 +42,25 @@ VocalAI Pro는 JUCE 프레임워크로 개발된 전문적인 AI 기반 보컬 �
 - **채널**: 모노/스테레오
 - **레이턴시**: < 10ms (44.1kHz)
 
+## 빌드 방법
+
+### 1. JUCE 설치
+1. [JUCE 공식 웹사이트](https://juce.com)에서 JUCE 다운로드
+2. 압축 해제 후 적절한 경로에 설치
+3. `build.bat` (Windows) 또는 `build.sh` (Linux/macOS)에서 JUCE 경로 수정
+
+### 2. 빌드 실행
+**Windows:**
+```bash
+build.bat
+```
+
+**Linux/macOS:**
+```bash
+chmod +x build.sh
+./build.sh
+```
+
 ### 3. 플러그인 설치
 빌드된 플러그인 파일을 다음 경로에 복사:
 

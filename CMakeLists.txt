@@ -9,8 +9,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(JUCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/JUCE" CACHE PATH "JUCE directory")
 
 # JUCE 모듈 찾기
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(JUCE REQUIRED juce)
+if(NOT EXISTS "${JUCE_DIR}")
+    message(FATAL_ERROR "JUCE directory not found at ${JUCE_DIR}. Please set JUCE_DIR to the correct path.")
+endif()
+
+# JUCE CMake 모듈 포함
+include(${JUCE_DIR}/extras/Build/CMake/JUCE.cmake)
 
 # 소스 파일들
 set(SOURCES
@@ -57,6 +61,9 @@ target_link_libraries(VocalAIPro
     juce::juce_gui_basics
     juce::juce_gui_extra
 )
+
+# JUCE 플러그인 설정
+juce_generate_juce_header(VocalAIPro)
 
 # 컴파일러 특정 설정
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")

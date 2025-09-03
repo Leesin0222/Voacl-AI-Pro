@@ -423,11 +423,11 @@ void VocalAIProEditor::updateVisualFeedback()
 {
     // Update real-time visual feedback
     // This would show current pitch, confidence, etc.
-    if (audioProcessor.aiPitchTuner)
+    if (audioProcessor.getAIPitchTuner())
     {
-        float currentPitch = audioProcessor.aiPitchTuner->getCurrentPitch();
-        float confidence = audioProcessor.aiPitchTuner->getPitchConfidence();
-        bool detected = audioProcessor.aiPitchTuner->isPitchDetected();
+        float currentPitch = audioProcessor.getAIPitchTuner()->getCurrentPitch();
+        float confidence = audioProcessor.getAIPitchTuner()->getPitchConfidence();
+        bool detected = audioProcessor.getAIPitchTuner()->isPitchDetected();
         
         if (detected && currentPitch > 0.0f)
         {

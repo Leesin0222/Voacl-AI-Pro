@@ -86,10 +86,10 @@ private:
             writePosition = 0;
         }
         
-        void process(float* samples, int numSamples, float delayTime, float feedback, float mix, float filterCutoff)
+        void process(float* samples, int numSamples, float delayTime, float feedback, float mix, float filterCutoff, double sampleRate)
         {
-            const float delaySamples = delayTime * 0.001f * 44100.0f; // Convert ms to samples
-            const int readPosition = (writePosition - static_cast<int>(delaySamples) + bufferSize) % bufferSize;
+            const float delaySamples = delayTime * 0.001f * static_cast<float>(sampleRate); // Convert ms to samples
+            int readPosition = (writePosition - static_cast<int>(delaySamples) + bufferSize) % bufferSize;
             
             for (int i = 0; i < numSamples; ++i)
             {
@@ -97,7 +97,7 @@ private:
                 
                 // Apply simple low-pass filter to delay feedback
                 static float filterState = 0.0f;
-                const float filterCoeff = 1.0f - std::exp(-2.0f * juce::MathConstants<float>::pi * filterCutoff / 44100.0f);
+                const float filterCoeff = 1.0f - std::exp(-2.0f * juce::MathConstants<float>::pi * filterCutoff / static_cast<float>(sampleRate));
                 filterState += filterCoeff * (delayedSample - filterState);
                 delayedSample = filterState;
                 
@@ -200,9 +200,9 @@ private:
             writePosition = 0;
         }
         
-        void process(float* samples, int numSamples, float amount, float delayMs, float detune)
+        void process(float* samples, int numSamples, float amount, float delayMs, float detune, double sampleRate)
         {
-            const float delaySamples = delayMs * 0.001f * 44100.0f;
+            const float delaySamples = delayMs * 0.001f * static_cast<float>(sampleRate);
             const int readPosition = (writePosition - static_cast<int>(delaySamples) + bufferSize) % bufferSize;
             
             for (int i = 0; i < numSamples; ++i)

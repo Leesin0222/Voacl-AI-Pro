@@ -54,6 +54,7 @@ public:
     //==============================================================================
     // Parameter Management
     juce::AudioProcessorValueTreeState& getValueTreeState() { return parameters; }
+    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
     // AI Pitch Tuning Parameters
     juce::AudioParameterFloat* pitchCorrectionParam;
@@ -93,6 +94,10 @@ private:
     // Parameter Update Handling
     void updateParameters();
     void parameterChanged(const juce::String& parameterID, float newValue);
+    
+    // Getter functions for editor access
+    AIPitchTuner* getAIPitchTuner() const { return aiPitchTuner; }
+    VocalEffects* getVocalEffects() const { return vocalEffects; }
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalAIProPlugin)
 };

@@ -69,7 +69,7 @@ void VocalEffects::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
         // Apply vocal doubling first (for natural sound)
         if (doublingAmount > 0.0f)
         {
-            vocalDoubler.process(channelData, numSamples, doublingAmount, doublingDelay, doublingDetune);
+            vocalDoubler.process(channelData, numSamples, doublingAmount, doublingDelay, doublingDetune, sampleRate);
         }
         
         // Apply harmony generation
@@ -87,7 +87,7 @@ void VocalEffects::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
         // Apply delay
         if (delayMix > 0.0f)
         {
-            delayLine.process(channelData, numSamples, delayTime, delayFeedback, delayMix, delayFilter);
+            delayLine.process(channelData, numSamples, delayTime, delayFeedback, delayMix, delayFilter, sampleRate);
         }
     }
     
