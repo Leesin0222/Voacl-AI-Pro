@@ -32,8 +32,8 @@ VocalAIProPlugin::VocalAIProPlugin()
     bypassParam = parameters.getRawParameterValue("bypass");
     
     // Initialize AI Components
-    aiPitchTuner = new AIPitchTuner();
-    vocalEffects = new VocalEffects();
+    aiPitchTuner = std::make_unique<AIPitchTuner>();
+    vocalEffects = std::make_unique<VocalEffects>();
     
     // Add parameter listener
     parameters.addParameterListener("pitchCorrection", this);
@@ -51,8 +51,7 @@ VocalAIProPlugin::VocalAIProPlugin()
 
 VocalAIProPlugin::~VocalAIProPlugin()
 {
-    delete aiPitchTuner;
-    delete vocalEffects;
+    // std::unique_ptr automatically handles cleanup
 }
 
 //==============================================================================
@@ -182,28 +181,62 @@ void VocalAIProPlugin::changeProgramName (int index, const juce::String& newName
 //==============================================================================
 void VocalAIProPlugin::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    currentSampleRate = sampleRate;
-    currentBlockSize = samplesPerBlock;
-    
-    // Prepare DSP components
-    juce::dsp::ProcessSpec spec;
-    spec.sampleRate = sampleRate;
-    spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
-    spec.numChannels = static_cast<juce::uint32>(getTotalNumOutputChannels());
-    
-    inputGain.prepare(spec);
-    outputGain.prepare(spec);
-    dryWetMixer.prepare(spec);
-    
-    // Prepare AI components
-    if (aiPitchTuner)
-        aiPitchTuner->prepare(sampleRate, samplesPerBlock, getTotalNumInputChannels());
-    
-    if (vocalEffects)
-        vocalEffects->prepare(sampleRate, samplesPerBlock, getTotalNumInputChannels());
-    
-    isInitialized = true;
-    updateParameters();
+    try
+    {
+        // Validate parameters
+        if (sampleRate <= 0.0 || samplesPerBlock <= 0)
+        {
+            jassertfalse; // Debug assertion
+            return;
+        }
+        
+        currentSampleRate = sampleRate;
+        currentBlockSize = samplesPerBlock;
+        
+        // Prepare DSP components
+        juce::dsp::ProcessSpec spec;
+        spec.sampleRate = sampleRate;
+        spec.maximumBlockSize = static_cast<juce::uint32>(samplesPerBlock);
+        spec.numChannels = static_cast<juce::uint32>(getTotalNumOutputChannels());
+        
+        inputGain.prepare(spec);
+        outputGain.prepare(spec);
+        dryWetMixer.prepare(spec);
+        
+        // Initialize parameter smoothers
+        inputGainSmoother.reset(sampleRate, 0.05); // 50ms smoothing
+        outputGainSmoother.reset(sampleRate, 0.05);
+        reverbAmountSmoother.reset(sampleRate, 0.1); // 100ms smoothing
+        delayTimeSmoother.reset(sampleRate, 0.2); // 200ms smoothing
+        
+        // Prepare AI components with error checking
+        if (aiPitchTuner)
+        {
+            aiPitchTuner->prepare(sampleRate, samplesPerBlock, getTotalNumInputChannels());
+        }
+        else
+        {
+            jassertfalse; // AI Pitch Tuner not initialized
+        }
+        
+        if (vocalEffects)
+        {
+            vocalEffects->prepare(sampleRate, samplesPerBlock, getTotalNumInputChannels());
+        }
+        else
+        {
+            jassertfalse; // Vocal Effects not initialized
+        }
+        
+        isInitialized = true;
+        updateParameters();
+    }
+    catch (const std::exception& e)
+    {
+        // Log error and reset to safe state
+        DBG("Error in prepareToPlay: " << e.what());
+        isInitialized = false;
+    }
 }
 
 void VocalAIProPlugin::releaseResources()
@@ -316,9 +349,15 @@ void VocalAIProPlugin::updateParameters()
 {
     if (!isInitialized) return;
     
-    // Update input/output gain
-    inputGain.setGainLinear(juce::Decibels::decibelsToGain(*inputGainParam));
-    outputGain.setGainLinear(juce::Decibels::decibelsToGain(*outputGainParam));
+    // Update smoothed parameters for anti-aliasing
+    inputGainSmoother.setTargetValue(juce::Decibels::decibelsToGain(*inputGainParam));
+    outputGainSmoother.setTargetValue(juce::Decibels::decibelsToGain(*outputGainParam));
+    reverbAmountSmoother.setTargetValue(*reverbAmountParam / 100.0f);
+    delayTimeSmoother.setTargetValue(*delayTimeParam);
+    
+    // Update input/output gain with smoothing
+    inputGain.setGainLinear(inputGainSmoother.getNextValue());
+    outputGain.setGainLinear(outputGainSmoother.getNextValue());
     
     // Update AI components
     if (aiPitchTuner)
@@ -329,8 +368,8 @@ void VocalAIProPlugin::updateParameters()
     
     if (vocalEffects)
     {
-        vocalEffects->setReverbAmount(*reverbAmountParam / 100.0f);
-        vocalEffects->setDelayTime(*delayTimeParam);
+        vocalEffects->setReverbAmount(reverbAmountSmoother.getNextValue());
+        vocalEffects->setDelayTime(delayTimeSmoother.getNextValue());
         vocalEffects->setDelayFeedback(*delayFeedbackParam / 100.0f);
         vocalEffects->setHarmonyAmount(*harmonyAmountParam / 100.0f);
         vocalEffects->setHarmonyVoices(*harmonyVoicesParam);

@@ -203,7 +203,7 @@ private:
         void process(float* samples, int numSamples, float amount, float delayMs, float detune, double sampleRate)
         {
             const float delaySamples = delayMs * 0.001f * static_cast<float>(sampleRate);
-            const int readPosition = (writePosition - static_cast<int>(delaySamples) + bufferSize) % bufferSize;
+            int readPosition = (writePosition - static_cast<int>(delaySamples) + bufferSize) % bufferSize;
             
             for (int i = 0; i < numSamples; ++i)
             {

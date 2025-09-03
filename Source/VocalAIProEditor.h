@@ -92,6 +92,26 @@ private:
     juce::Label pitchConfidenceLabel;
     juce::Label statusLabel;
     
+    // Real-time Spectrum Analyzer
+    class SpectrumAnalyzer : public juce::Component, public juce::Timer
+    {
+    public:
+        SpectrumAnalyzer();
+        ~SpectrumAnalyzer() override;
+        
+        void paint(juce::Graphics& g) override;
+        void timerCallback() override;
+        void updateSpectrum(const float* magnitudes, int numBins);
+        
+    private:
+        std::vector<float> spectrumData;
+        std::vector<float> smoothedSpectrum;
+        static constexpr int numBins = 64;
+        static constexpr int smoothingFactor = 8;
+    };
+    
+    std::unique_ptr<SpectrumAnalyzer> spectrumAnalyzer;
+    
     //==============================================================================
     // GUI Components - Branding
     juce::Label titleLabel;

@@ -50,9 +50,10 @@ private:
     float calculateTargetPitch(float detectedPitch);
     void applyPitchCorrection(juce::AudioBuffer<float>& buffer, int channel, float targetPitch);
     
-    // Pitch Shifting
+    // Pitch Shifting (Improved FFT-based)
     void pitchShift(float* samples, int numSamples, float pitchRatio);
     void processPitchShift(juce::AudioBuffer<float>& buffer, int channel, float pitchRatio);
+    void processPitchShiftFFT(float* samples, int numSamples, float pitchRatio);
     
     //==============================================================================
     // Processing State
@@ -83,7 +84,11 @@ private:
     // Pitch Shifting State
     std::vector<float> pitchShiftBuffer;
     std::vector<float> overlapBuffer;
+    std::vector<float> fftBuffer;
+    std::vector<float> windowBuffer;
     int pitchShiftBufferSize = 4096;
+    int fftSize = 2048;
+    int hopSize = 512;
     float currentPitchRatio = 1.0f;
     float targetPitchRatio = 1.0f;
     

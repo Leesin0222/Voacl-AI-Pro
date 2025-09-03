@@ -200,18 +200,28 @@ VocalAIProEditor::~VocalAIProEditor()
 //==============================================================================
 void VocalAIProEditor::paint (juce::Graphics& g)
 {
-    // Background gradient
-    juce::ColourGradient gradient(juce::Colour(0xff2c3e50), 0, 0,
-                                 juce::Colour(0xff34495e), 0, getHeight(), false);
-    g.setGradientFill(gradient);
+    // Enhanced background with multiple gradients
+    juce::ColourGradient mainGradient(juce::Colour(0xff1a252f), 0, 0,
+                                     juce::Colour(0xff2c3e50), 0, getHeight(), false);
+    g.setGradientFill(mainGradient);
     g.fillAll();
     
-    // Draw subtle grid pattern
-    g.setColour(juce::Colour(0x10ffffff));
-    for (int x = 0; x < getWidth(); x += 20)
+    // Add subtle overlay gradient
+    juce::ColourGradient overlayGradient(juce::Colour(0x20ffffff), 0, 0,
+                                        juce::Colour(0x00000000), 0, getHeight() / 2, false);
+    g.setGradientFill(overlayGradient);
+    g.fillAll();
+    
+    // Draw modern grid pattern with varying opacity
+    g.setColour(juce::Colour(0x08ffffff));
+    for (int x = 0; x < getWidth(); x += 40)
         g.drawVerticalLine(x, 0, getHeight());
-    for (int y = 0; y < getHeight(); y += 20)
+    for (int y = 0; y < getHeight(); y += 40)
         g.drawHorizontalLine(y, 0, getWidth());
+    
+    // Add subtle border
+    g.setColour(juce::Colour(0xff3498db));
+    g.drawRect(getLocalBounds(), 2);
 }
 
 void VocalAIProEditor::resized()
@@ -350,13 +360,20 @@ void VocalAIProEditor::sliderValueChanged(juce::Slider* slider)
 void VocalAIProEditor::setupSlider(juce::Slider& slider, const juce::String& suffix)
 {
     slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xff4a90e2));
-    slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xff7f8c8d));
+    slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 24);
+    
+    // Modern gradient colors
+    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xff3498db));
+    slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xff2c3e50));
     slider.setColour(juce::Slider::thumbColourId, juce::Colour(0xffe74c3c));
     slider.setColour(juce::Slider::textBoxTextColourId, juce::Colour(0xffecf0f1));
     slider.setColour(juce::Slider::textBoxBackgroundColourId, juce::Colour(0xff34495e));
-    slider.setColour(juce::Slider::textBoxOutlineColourId, juce::Colour(0xff7f8c8d));
+    slider.setColour(juce::Slider::textBoxOutlineColourId, juce::Colour(0xff3498db));
+    slider.setColour(juce::Slider::trackColourId, juce::Colour(0xff3498db));
+    
+    // Enhanced visual feedback
+    slider.setColour(juce::Slider::backgroundColourId, juce::Colour(0xff2c3e50));
+    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xff3498db));
     
     if (!suffix.isEmpty())
         slider.setTextValueSuffix(" " + suffix);

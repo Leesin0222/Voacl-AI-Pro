@@ -78,26 +78,34 @@ private:
     juce::AudioProcessorValueTreeState parameters;
     
     // AI Processing Components
-    class AIPitchTuner* aiPitchTuner;
-    class VocalEffects* vocalEffects;
+    std::unique_ptr<class AIPitchTuner> aiPitchTuner;
+    std::unique_ptr<class VocalEffects> vocalEffects;
     
     // DSP Components
     juce::dsp::Gain<float> inputGain;
     juce::dsp::Gain<float> outputGain;
     juce::dsp::DryWetMixer<float> dryWetMixer;
     
+    // Parameter Smoothing
+    juce::LinearSmoothedValue<float> inputGainSmoother;
+    juce::LinearSmoothedValue<float> outputGainSmoother;
+    juce::LinearSmoothedValue<float> reverbAmountSmoother;
+    juce::LinearSmoothedValue<float> delayTimeSmoother;
+    
     // Processing State
     double currentSampleRate = 44100.0;
     int currentBlockSize = 512;
     bool isInitialized = false;
     
+    // Getter functions for editor access
+    AIPitchTuner* getAIPitchTuner() const { return aiPitchTuner.get(); }
+    VocalEffects* getVocalEffects() const { return vocalEffects.get(); }
+
+private:
+    //==============================================================================
     // Parameter Update Handling
     void updateParameters();
     void parameterChanged(const juce::String& parameterID, float newValue);
-    
-    // Getter functions for editor access
-    AIPitchTuner* getAIPitchTuner() const { return aiPitchTuner; }
-    VocalEffects* getVocalEffects() const { return vocalEffects; }
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalAIProPlugin)
 };

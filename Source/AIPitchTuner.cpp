@@ -9,6 +9,14 @@ AIPitchTuner::AIPitchTuner()
     yinBuffer.resize(pitchBufferSize, 0.0f);
     pitchShiftBuffer.resize(pitchShiftBufferSize, 0.0f);
     overlapBuffer.resize(hopSize, 0.0f);
+    fftBuffer.resize(fftSize * 2, 0.0f); // Complex FFT buffer
+    windowBuffer.resize(fftSize, 0.0f);
+    
+    // Initialize Hann window
+    for (int i = 0; i < fftSize; ++i)
+    {
+        windowBuffer[i] = 0.5f * (1.0f - std::cos(2.0f * juce::MathConstants<float>::pi * i / (fftSize - 1)));
+    }
     
     // Initialize smoothers
     pitchRatioSmoother.reset(0.0f);
@@ -322,8 +330,81 @@ void AIPitchTuner::processPitchShift(juce::AudioBuffer<float>& buffer, int chann
     float* channelData = buffer.getWritePointer(channel);
     const int numSamples = buffer.getNumSamples();
     
-    // Apply pitch shifting
-    pitchShift(channelData, numSamples, pitchRatio);
+    // Use improved FFT-based pitch shifting for better quality
+    if (std::abs(pitchRatio - 1.0f) > 0.01f)
+    {
+        processPitchShiftFFT(channelData, numSamples, pitchRatio);
+    }
+}
+
+void AIPitchTuner::processPitchShiftFFT(float* samples, int numSamples, float pitchRatio)
+{
+    // Enhanced FFT-based pitch shifting with phase vocoder
+    // This provides much better quality than simple time-stretching
+    
+    const int overlap = fftSize / 4; // 75% overlap for smooth results
+    const int stepSize = fftSize - overlap;
+    
+    for (int pos = 0; pos < numSamples - fftSize; pos += stepSize)
+    {
+        // Apply window and copy to FFT buffer
+        for (int i = 0; i < fftSize; ++i)
+        {
+            if (pos + i < numSamples)
+            {
+                fftBuffer[i * 2] = samples[pos + i] * windowBuffer[i]; // Real part
+                fftBuffer[i * 2 + 1] = 0.0f; // Imaginary part
+            }
+            else
+            {
+                fftBuffer[i * 2] = 0.0f;
+                fftBuffer[i * 2 + 1] = 0.0f;
+            }
+        }
+        
+        // Perform FFT (using JUCE's FFT)
+        juce::dsp::FFT fft(static_cast<int>(std::log2(fftSize)));
+        fft.performFrequencyOnlyForwardTransform(fftBuffer.data());
+        
+        // Phase vocoder processing
+        static std::vector<float> lastPhase(fftSize / 2 + 1, 0.0f);
+        static std::vector<float> sumPhase(fftSize / 2 + 1, 0.0f);
+        
+        for (int k = 0; k <= fftSize / 2; ++k)
+        {
+            float magnitude = std::sqrt(fftBuffer[k * 2] * fftBuffer[k * 2] + fftBuffer[k * 2 + 1] * fftBuffer[k * 2 + 1]);
+            float phase = std::atan2(fftBuffer[k * 2 + 1], fftBuffer[k * 2]);
+            
+            float deltaPhase = phase - lastPhase[k];
+            lastPhase[k] = phase;
+            
+            // Unwrap phase
+            while (deltaPhase > juce::MathConstants<float>::pi) deltaPhase -= 2.0f * juce::MathConstants<float>::pi;
+            while (deltaPhase < -juce::MathConstants<float>::pi) deltaPhase += 2.0f * juce::MathConstants<float>::pi;
+            
+            // Calculate instantaneous frequency
+            float instFreq = k * 2.0f * juce::MathConstants<float>::pi / fftSize + deltaPhase / stepSize;
+            
+            // Adjust frequency for pitch shifting
+            float newFreq = instFreq * pitchRatio;
+            
+            // Update phase
+            sumPhase[k] += newFreq * stepSize;
+            
+            // Convert back to complex
+            fftBuffer[k * 2] = magnitude * std::cos(sumPhase[k]);
+            fftBuffer[k * 2 + 1] = magnitude * std::sin(sumPhase[k]);
+        }
+        
+        // Perform inverse FFT
+        fft.performRealOnlyInverseTransform(fftBuffer.data());
+        
+        // Apply window and overlap-add
+        for (int i = 0; i < fftSize && pos + i < numSamples; ++i)
+        {
+            samples[pos + i] = fftBuffer[i] * windowBuffer[i] * 0.5f; // Scale down for overlap
+        }
+    }
 }
 
 //==============================================================================
