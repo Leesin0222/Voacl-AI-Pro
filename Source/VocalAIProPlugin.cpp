@@ -382,6 +382,49 @@ void VocalAIProPlugin::parameterChanged(const juce::String& parameterID, float n
     // Parameters are updated in updateParameters() for efficiency
 }
 
+bool VocalAIProPlugin::validateParameter(const juce::String& parameterID, float value)
+{
+    // Check for NaN or infinity
+    if (std::isnan(value) || std::isinf(value)) {
+        return false;
+    }
+    
+    // Parameter-specific validation
+    if (parameterID == "pitchCorrection" || parameterID == "pitchSpeed" || 
+        parameterID == "reverbAmount" || parameterID == "harmonyAmount") {
+        return value >= 0.0f && value <= 100.0f;
+    }
+    
+    if (parameterID == "delayTime") {
+        return value >= 0.0f && value <= 2000.0f;
+    }
+    
+    if (parameterID == "delayFeedback") {
+        return value >= 0.0f && value <= 95.0f;
+    }
+    
+    if (parameterID == "harmonyVoices") {
+        return value >= 1.0f && value <= 8.0f;
+    }
+    
+    if (parameterID == "inputGain" || parameterID == "outputGain") {
+        return value >= -24.0f && value <= 24.0f;
+    }
+    
+    return true; // Default validation passed
+}
+
+float VocalAIProPlugin::sanitizeParameter(float value, float minVal, float maxVal)
+{
+    // Handle NaN and infinity
+    if (std::isnan(value) || std::isinf(value)) {
+        return (minVal + maxVal) * 0.5f; // Return middle value
+    }
+    
+    // Clamp to valid range
+    return juce::jlimit(minVal, maxVal, value);
+}
+
 //==============================================================================
 // This creates new instances of the plugin
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

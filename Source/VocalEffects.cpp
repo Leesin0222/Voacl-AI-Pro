@@ -56,10 +56,20 @@ void VocalEffects::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuff
 {
     if (!isPrepared) return;
     
+    // Validate input buffer
+    if (buffer.getNumSamples() <= 0 || buffer.getNumChannels() <= 0) {
+        return;
+    }
+    
     juce::ignoreUnused(midiMessages);
     
     const int numSamples = buffer.getNumSamples();
     const int numChannelsToProcess = juce::jmin(numChannels, buffer.getNumChannels());
+    
+    // Additional safety check
+    if (numSamples <= 0 || numChannelsToProcess <= 0) {
+        return;
+    }
     
     // Process each channel
     for (int channel = 0; channel < numChannelsToProcess; ++channel)
@@ -140,6 +150,10 @@ void VocalEffects::reset()
 //==============================================================================
 void VocalEffects::setReverbAmount(float amount)
 {
+    // Validate and clamp parameter
+    if (std::isnan(amount) || std::isinf(amount)) {
+        amount = 0.0f;
+    }
     reverbAmount = juce::jlimit(0.0f, 1.0f, amount);
 }
 

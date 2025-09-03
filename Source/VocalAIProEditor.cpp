@@ -382,7 +382,15 @@ void VocalAIProEditor::comboBoxChanged(juce::ComboBox* comboBox)
     if (comboBox == &presetComboBox)
     {
         int selectedId = presetComboBox.getSelectedId();
-        applyPreset(selectedId);
+        
+        // Validate preset ID range
+        if (selectedId >= 1 && selectedId <= 13) {
+            applyPreset(selectedId);
+        } else {
+            // Fallback to default preset
+            presetComboBox.setSelectedId(1);
+            applyPreset(1);
+        }
     }
 }
 

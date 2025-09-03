@@ -108,5 +108,9 @@ private:
     void updateParameters();
     void parameterChanged(const juce::String& parameterID, float newValue);
     
+    // Parameter Validation
+    bool validateParameter(const juce::String& parameterID, float value);
+    float sanitizeParameter(float value, float minVal, float maxVal);
+    
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VocalAIProPlugin)
 };

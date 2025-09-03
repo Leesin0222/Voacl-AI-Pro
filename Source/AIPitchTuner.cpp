@@ -11,6 +11,7 @@ AIPitchTuner::AIPitchTuner()
     overlapBuffer.resize(hopSize, 0.0f);
     fftBuffer.resize(fftSize * 2, 0.0f); // Complex FFT buffer
     windowBuffer.resize(fftSize, 0.0f);
+    tempBuffer.resize(fftSize, 0.0f); // Temporary buffer for processing
     
     // Initialize Hann window
     for (int i = 0; i < fftSize; ++i)
@@ -342,15 +343,26 @@ void AIPitchTuner::processPitchShiftFFT(float* samples, int numSamples, float pi
     // Enhanced FFT-based pitch shifting with phase vocoder
     // This provides much better quality than simple time-stretching
     
+    // Validate FFT size is power of 2
+    if ((fftSize & (fftSize - 1)) != 0) {
+        jassertfalse; // FFT size must be power of 2
+        return;
+    }
+    
+    // Validate input parameters
+    if (numSamples <= 0 || samples == nullptr || std::abs(pitchRatio - 1.0f) < 0.001f) {
+        return; // No processing needed
+    }
+    
     const int overlap = fftSize / 4; // 75% overlap for smooth results
     const int stepSize = fftSize - overlap;
     
     for (int pos = 0; pos < numSamples - fftSize; pos += stepSize)
     {
-        // Apply window and copy to FFT buffer
+        // Apply window and copy to FFT buffer with bounds checking
         for (int i = 0; i < fftSize; ++i)
         {
-            if (pos + i < numSamples)
+            if (pos + i < numSamples && i < static_cast<int>(windowBuffer.size()))
             {
                 fftBuffer[i * 2] = samples[pos + i] * windowBuffer[i]; // Real part
                 fftBuffer[i * 2 + 1] = 0.0f; // Imaginary part

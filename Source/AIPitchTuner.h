@@ -87,6 +87,7 @@ private:
     std::vector<float> overlapBuffer;
     std::vector<float> fftBuffer;
     std::vector<float> windowBuffer;
+    std::vector<float> tempBuffer; // Reusable temporary buffer
     int pitchShiftBufferSize = 4096;
     int fftSize = 2048;
     int hopSize = 512;
