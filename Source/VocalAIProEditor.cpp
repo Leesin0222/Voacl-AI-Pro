@@ -16,15 +16,15 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     setupGroupComponent(aiPitchGroup, "AI Pitch Tuning");
     addAndMakeVisible(aiPitchGroup);
     
-    setupSlider(pitchCorrectionSlider, "%");
-    pitchCorrectionSlider.setRange(0.0, 100.0, 0.1);
-    pitchCorrectionSlider.setValue(50.0);
-    addAndMakeVisible(pitchCorrectionSlider);
+    pitchCorrectionKnob.setRange(0.0, 100.0, 0.1);
+    pitchCorrectionKnob.setValue(50.0);
+    pitchCorrectionKnob.setTextValueSuffix(" %");
+    addAndMakeVisible(pitchCorrectionKnob);
     
-    setupSlider(pitchSpeedSlider, "%");
-    pitchSpeedSlider.setRange(0.0, 100.0, 0.1);
-    pitchSpeedSlider.setValue(50.0);
-    addAndMakeVisible(pitchSpeedSlider);
+    pitchSpeedKnob.setRange(0.0, 100.0, 0.1);
+    pitchSpeedKnob.setValue(50.0);
+    pitchSpeedKnob.setTextValueSuffix(" %");
+    addAndMakeVisible(pitchSpeedKnob);
     
     setupButton(pitchCorrectionEnabledButton);
     pitchCorrectionEnabledButton.setToggleState(true, juce::dontSendNotification);
@@ -40,36 +40,35 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     addAndMakeVisible(vocalEffectsGroup);
     
     // Reverb
-    setupSlider(reverbAmountSlider, "%");
-    reverbAmountSlider.setRange(0.0, 100.0, 0.1);
-    reverbAmountSlider.setValue(0.0);
-    addAndMakeVisible(reverbAmountSlider);
+    reverbAmountKnob.setRange(0.0, 100.0, 0.1);
+    reverbAmountKnob.setValue(0.0);
+    reverbAmountKnob.setTextValueSuffix(" %");
+    addAndMakeVisible(reverbAmountKnob);
     setupLabel(reverbAmountLabel, "Reverb");
     
     // Delay
-    setupSlider(delayTimeSlider, "ms");
-    delayTimeSlider.setRange(0.0, 2000.0, 1.0);
-    delayTimeSlider.setValue(250.0);
-    addAndMakeVisible(delayTimeSlider);
+    delayTimeKnob.setRange(0.0, 2000.0, 1.0);
+    delayTimeKnob.setValue(250.0);
+    delayTimeKnob.setTextValueSuffix(" ms");
+    addAndMakeVisible(delayTimeKnob);
     setupLabel(delayTimeLabel, "Delay Time");
     
-    setupSlider(delayFeedbackSlider, "%");
-    delayFeedbackSlider.setRange(0.0, 95.0, 0.1);
-    delayFeedbackSlider.setValue(30.0);
-    addAndMakeVisible(delayFeedbackSlider);
+    delayFeedbackKnob.setRange(0.0, 95.0, 0.1);
+    delayFeedbackKnob.setValue(30.0);
+    delayFeedbackKnob.setTextValueSuffix(" %");
+    addAndMakeVisible(delayFeedbackKnob);
     setupLabel(delayFeedbackLabel, "Feedback");
     
     // Harmony
-    setupSlider(harmonyAmountSlider, "%");
-    harmonyAmountSlider.setRange(0.0, 100.0, 0.1);
-    harmonyAmountSlider.setValue(0.0);
-    addAndMakeVisible(harmonyAmountSlider);
+    harmonyAmountKnob.setRange(0.0, 100.0, 0.1);
+    harmonyAmountKnob.setValue(0.0);
+    harmonyAmountKnob.setTextValueSuffix(" %");
+    addAndMakeVisible(harmonyAmountKnob);
     setupLabel(harmonyAmountLabel, "Harmony");
     
-    setupSlider(harmonyVoicesSlider, "");
-    harmonyVoicesSlider.setRange(1, 8, 1);
-    harmonyVoicesSlider.setValue(2);
-    addAndMakeVisible(harmonyVoicesSlider);
+    harmonyVoicesKnob.setRange(1, 8, 1);
+    harmonyVoicesKnob.setValue(2);
+    addAndMakeVisible(harmonyVoicesKnob);
     setupLabel(harmonyVoicesLabel, "Voices");
     
     //==============================================================================
@@ -77,16 +76,16 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     setupGroupComponent(masterGroup, "Master");
     addAndMakeVisible(masterGroup);
     
-    setupSlider(inputGainSlider, "dB");
-    inputGainSlider.setRange(-24.0, 24.0, 0.1);
-    inputGainSlider.setValue(0.0);
-    addAndMakeVisible(inputGainSlider);
+    inputGainKnob.setRange(-24.0, 24.0, 0.1);
+    inputGainKnob.setValue(0.0);
+    inputGainKnob.setTextValueSuffix(" dB");
+    addAndMakeVisible(inputGainKnob);
     setupLabel(inputGainLabel, "Input Gain");
     
-    setupSlider(outputGainSlider, "dB");
-    outputGainSlider.setRange(-24.0, 24.0, 0.1);
-    outputGainSlider.setValue(0.0);
-    addAndMakeVisible(outputGainSlider);
+    outputGainKnob.setRange(-24.0, 24.0, 0.1);
+    outputGainKnob.setValue(0.0);
+    outputGainKnob.setTextValueSuffix(" dB");
+    addAndMakeVisible(outputGainKnob);
     setupLabel(outputGainLabel, "Output Gain");
     
     setupButton(bypassButton);
@@ -95,38 +94,7 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     setupLabel(bypassLabel, "Bypass");
     
     //==============================================================================
-    // Setup Preset Management
-    setupGroupComponent(presetGroup, "Presets");
-    addAndMakeVisible(presetGroup);
-    
-    // Professional Vocal Presets - Optimized for Music Producers
-    presetComboBox.addItem("Perfect Vocal", 1);
-    presetComboBox.addItem("Studio Master", 2);
-    presetComboBox.addItem("Pop Hit Maker", 3);
-    presetComboBox.addItem("Rock Legend", 4);
-    presetComboBox.addItem("R&B Smooth", 5);
-    presetComboBox.addItem("Trap Vocal", 6);
-    presetComboBox.addItem("Live Performance", 7);
-    presetComboBox.addItem("Creative Chaos", 8);
-    
-    // Basic Presets
-    presetComboBox.addItem("Default", 9);
-    presetComboBox.addItem("Vocal Doubling", 10);
-    presetComboBox.addItem("Harmony", 11);
-    presetComboBox.addItem("Reverb", 12);
-    presetComboBox.addItem("Delay", 13);
-    presetComboBox.setSelectedId(1);
-    addAndMakeVisible(presetComboBox);
-    
-    savePresetButton.setButtonText("Save");
-    savePresetButton.addListener(this);
-    addAndMakeVisible(savePresetButton);
-    
-    deletePresetButton.setButtonText("Delete");
-    deletePresetButton.addListener(this);
-    addAndMakeVisible(deletePresetButton);
-    
-    setupLabel(presetLabel, "Preset");
+    // Preset Management removed - using DAW preset dropdown
     
     //==============================================================================
     // Setup Visual Feedback
@@ -158,34 +126,34 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     //==============================================================================
     // Setup Parameter Attachments
     pitchCorrectionAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "pitchCorrection", pitchCorrectionSlider);
+        audioProcessor.getValueTreeState(), "pitchCorrection", pitchCorrectionKnob);
     
     pitchSpeedAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "pitchSpeed", pitchSpeedSlider);
+        audioProcessor.getValueTreeState(), "pitchSpeed", pitchSpeedKnob);
     
     pitchCorrectionEnabledAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         audioProcessor.getValueTreeState(), "pitchCorrectionEnabled", pitchCorrectionEnabledButton);
     
     reverbAmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "reverbAmount", reverbAmountSlider);
+        audioProcessor.getValueTreeState(), "reverbAmount", reverbAmountKnob);
     
     delayTimeAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "delayTime", delayTimeSlider);
+        audioProcessor.getValueTreeState(), "delayTime", delayTimeKnob);
     
     delayFeedbackAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "delayFeedback", delayFeedbackSlider);
+        audioProcessor.getValueTreeState(), "delayFeedback", delayFeedbackKnob);
     
     harmonyAmountAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "harmonyAmount", harmonyAmountSlider);
+        audioProcessor.getValueTreeState(), "harmonyAmount", harmonyAmountKnob);
     
     harmonyVoicesAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "harmonyVoices", harmonyVoicesSlider);
+        audioProcessor.getValueTreeState(), "harmonyVoices", harmonyVoicesKnob);
     
     inputGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "inputGain", inputGainSlider);
+        audioProcessor.getValueTreeState(), "inputGain", inputGainKnob);
     
     outputGainAttachment = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(
-        audioProcessor.getValueTreeState(), "outputGain", outputGainSlider);
+        audioProcessor.getValueTreeState(), "outputGain", outputGainKnob);
     
     bypassAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
         audioProcessor.getValueTreeState(), "bypass", bypassButton);
@@ -197,18 +165,17 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     
     //==============================================================================
     // Add listeners
-    pitchCorrectionSlider.addListener(this);
-    pitchSpeedSlider.addListener(this);
+    pitchCorrectionKnob.addListener(this);
+    pitchSpeedKnob.addListener(this);
     pitchCorrectionEnabledButton.addListener(this);
-    reverbAmountSlider.addListener(this);
-    delayTimeSlider.addListener(this);
-    delayFeedbackSlider.addListener(this);
-    harmonyAmountSlider.addListener(this);
-    harmonyVoicesSlider.addListener(this);
-    inputGainSlider.addListener(this);
-    outputGainSlider.addListener(this);
+    reverbAmountKnob.addListener(this);
+    delayTimeKnob.addListener(this);
+    delayFeedbackKnob.addListener(this);
+    harmonyAmountKnob.addListener(this);
+    harmonyVoicesKnob.addListener(this);
+    inputGainKnob.addListener(this);
+    outputGainKnob.addListener(this);
     bypassButton.addListener(this);
-    presetComboBox.addListener(this);
 }
 
 VocalAIProEditor::~VocalAIProEditor()
@@ -268,10 +235,10 @@ void VocalAIProEditor::resized()
     
     // AI Pitch controls
     pitchCorrectionLabel.setBounds(aiPitchTop.removeFromLeft(80));
-    pitchCorrectionSlider.setBounds(aiPitchTop.removeFromLeft(120));
+    pitchCorrectionKnob.setBounds(aiPitchTop.removeFromLeft(120));
     aiPitchTop.removeFromLeft(CONTROL_SPACING);
     pitchSpeedLabel.setBounds(aiPitchTop.removeFromLeft(80));
-    pitchSpeedSlider.setBounds(aiPitchTop);
+    pitchSpeedKnob.setBounds(aiPitchTop);
     
     pitchCorrectionEnabledLabel.setBounds(aiPitchBottom.removeFromLeft(80));
     pitchCorrectionEnabledButton.setBounds(aiPitchBottom.removeFromLeft(50));
@@ -286,23 +253,23 @@ void VocalAIProEditor::resized()
     // Reverb
     auto reverbArea = vocalEffectsContent.removeFromTop(50);
     reverbAmountLabel.setBounds(reverbArea.removeFromLeft(80));
-    reverbAmountSlider.setBounds(reverbArea);
+    reverbAmountKnob.setBounds(reverbArea);
     
     // Delay
     auto delayArea = vocalEffectsContent.removeFromTop(50);
     delayTimeLabel.setBounds(delayArea.removeFromLeft(80));
-    delayTimeSlider.setBounds(delayArea.removeFromLeft(100));
+    delayTimeKnob.setBounds(delayArea.removeFromLeft(100));
     delayArea.removeFromLeft(CONTROL_SPACING);
     delayFeedbackLabel.setBounds(delayArea.removeFromLeft(80));
-    delayFeedbackSlider.setBounds(delayArea);
+    delayFeedbackKnob.setBounds(delayArea);
     
     // Harmony
     auto harmonyArea = vocalEffectsContent.removeFromTop(50);
     harmonyAmountLabel.setBounds(harmonyArea.removeFromLeft(80));
-    harmonyAmountSlider.setBounds(harmonyArea.removeFromLeft(100));
+    harmonyAmountKnob.setBounds(harmonyArea.removeFromLeft(100));
     harmonyArea.removeFromLeft(CONTROL_SPACING);
     harmonyVoicesLabel.setBounds(harmonyArea.removeFromLeft(80));
-    harmonyVoicesSlider.setBounds(harmonyArea);
+    harmonyVoicesKnob.setBounds(harmonyArea);
     
     // Right column
     auto masterArea = rightColumn.removeFromTop(150);
@@ -313,10 +280,10 @@ void VocalAIProEditor::resized()
     // Master controls
     auto inputGainArea = masterContent.removeFromTop(40);
     inputGainLabel.setBounds(inputGainArea.removeFromLeft(80));
-    inputGainSlider.setBounds(inputGainArea.removeFromLeft(120));
+    inputGainKnob.setBounds(inputGainArea.removeFromLeft(120));
     inputGainArea.removeFromLeft(CONTROL_SPACING);
     outputGainLabel.setBounds(inputGainArea.removeFromLeft(80));
-    outputGainSlider.setBounds(inputGainArea);
+    outputGainKnob.setBounds(inputGainArea);
     
     auto bypassArea = masterContent.removeFromTop(40);
     bypassLabel.setBounds(bypassArea.removeFromLeft(80));
@@ -324,22 +291,8 @@ void VocalAIProEditor::resized()
     
     rightColumn.removeFromTop(GROUP_SPACING);
     
-    auto presetArea = rightColumn.removeFromTop(120);
-    presetGroup.setBounds(presetArea);
-    
-    auto presetContent = presetArea.reduced(15, 25);
-    
-    // Preset controls
-    auto presetComboArea = presetContent.removeFromTop(30);
-    presetLabel.setBounds(presetComboArea.removeFromLeft(80));
-    presetComboBox.setBounds(presetComboArea.removeFromLeft(150));
-    
-    auto presetButtonsArea = presetContent.removeFromTop(30);
-    savePresetButton.setBounds(presetButtonsArea.removeFromLeft(60));
-    presetButtonsArea.removeFromLeft(CONTROL_SPACING);
-    deletePresetButton.setBounds(presetButtonsArea.removeFromLeft(60));
-    
-    auto visualArea = rightColumn.removeFromTop(150);
+    // Preset area removed - using DAW preset dropdown
+    auto visualArea = rightColumn.removeFromTop(200);
     visualGroup.setBounds(visualArea);
     
     auto visualContent = visualArea.reduced(15, 25);
@@ -362,14 +315,8 @@ void VocalAIProEditor::timerCallback()
 //==============================================================================
 void VocalAIProEditor::buttonClicked(juce::Button* button)
 {
-    if (button == &savePresetButton)
-    {
-        saveCurrentPreset();
-    }
-    else if (button == &deletePresetButton)
-    {
-        deleteCurrentPreset();
-    }
+    // Preset buttons removed - using DAW preset system
+    juce::ignoreUnused(button);
 }
 
 void VocalAIProEditor::sliderValueChanged(juce::Slider* slider)
@@ -380,39 +327,35 @@ void VocalAIProEditor::sliderValueChanged(juce::Slider* slider)
 
 void VocalAIProEditor::comboBoxChanged(juce::ComboBox* comboBox)
 {
-    if (comboBox == &presetComboBox)
-    {
-        int selectedId = presetComboBox.getSelectedId();
-        
-        // Validate preset ID range
-        if (selectedId >= 1 && selectedId <= 13) {
-            applyPreset(selectedId);
-        } else {
-            // Fallback to default preset
-            presetComboBox.setSelectedId(1);
-            applyPreset(1);
-        }
-    }
+    // Preset combo box removed - using DAW preset system
+    juce::ignoreUnused(comboBox);
 }
 
 //==============================================================================
 void VocalAIProEditor::setupSlider(juce::Slider& slider, const juce::String& suffix)
 {
+    // Professional knob style
     slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
-    slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 80, 24);
+    slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
     
-    // Modern gradient colors
-    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xff3498db));
-    slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xff2c3e50));
-    slider.setColour(juce::Slider::thumbColourId, juce::Colour(0xffe74c3c));
-    slider.setColour(juce::Slider::textBoxTextColourId, juce::Colour(0xffecf0f1));
-    slider.setColour(juce::Slider::textBoxBackgroundColourId, juce::Colour(0xff34495e));
-    slider.setColour(juce::Slider::textBoxOutlineColourId, juce::Colour(0xff3498db));
-    slider.setColour(juce::Slider::trackColourId, juce::Colour(0xff3498db));
+    // Professional knob colors - inspired by FabFilter, Waves, etc.
+    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xff4a90e2));      // Blue fill
+    slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xff34495e));   // Dark outline
+    slider.setColour(juce::Slider::thumbColourId, juce::Colour(0xffe74c3c));                 // Red thumb
+    slider.setColour(juce::Slider::textBoxTextColourId, juce::Colour(0xffecf0f1));           // Light text
+    slider.setColour(juce::Slider::textBoxBackgroundColourId, juce::Colour(0xff2c3e50));     // Dark background
+    slider.setColour(juce::Slider::textBoxOutlineColourId, juce::Colour(0xff7f8c8d));        // Gray outline
+    slider.setColour(juce::Slider::trackColourId, juce::Colour(0xff4a90e2));                 // Blue track
+    slider.setColour(juce::Slider::backgroundColourId, juce::Colour(0xff2c3e50));            // Dark background
     
-    // Enhanced visual feedback
-    slider.setColour(juce::Slider::backgroundColourId, juce::Colour(0xff2c3e50));
-    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xff3498db));
+    // Enhanced knob appearance
+    slider.setColour(juce::Slider::rotarySliderFillColourId, juce::Colour(0xff4a90e2));
+    slider.setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colour(0xff34495e));
+    
+    // Professional knob settings
+    slider.setMouseDragSensitivity(200);  // Smooth dragging
+    slider.setScrollWheelEnabled(true);   // Mouse wheel support
+    slider.setDoubleClickReturnValue(true, 0.0); // Double-click to reset
     
     if (!suffix.isEmpty())
         slider.setTextValueSuffix(" " + suffix);
@@ -444,155 +387,7 @@ void VocalAIProEditor::setupGroupComponent(juce::GroupComponent& group, const ju
 }
 
 //==============================================================================
-void VocalAIProEditor::loadPresets()
-{
-    // Load presets from file or create default presets
-    updatePresetComboBox();
-}
-
-void VocalAIProEditor::saveCurrentPreset()
-{
-    // Save current parameter values as a new preset
-    juce::String presetName = juce::String("Preset ") + juce::String(presetComboBox.getNumItems() + 1);
-    presetComboBox.addItem(presetName, presetComboBox.getNumItems() + 1);
-    presetComboBox.setSelectedId(presetComboBox.getNumItems());
-}
-
-void VocalAIProEditor::deleteCurrentPreset()
-{
-    int selectedId = presetComboBox.getSelectedId();
-    if (selectedId > 1) // Don't delete default preset
-    {
-        // JUCE 8에서는 removeItem이 제거되었으므로 clear하고 다시 추가
-        int currentIndex = presetComboBox.getSelectedItemIndex();
-        if (currentIndex >= 0)
-        {
-            // 현재 선택된 항목을 제외하고 모든 항목을 다시 추가
-            juce::StringArray items;
-            for (int i = 0; i < presetComboBox.getNumItems(); ++i)
-            {
-                if (i != currentIndex)
-                {
-                    items.add(presetComboBox.getItemText(i));
-                }
-            }
-            
-            presetComboBox.clear();
-            for (int i = 0; i < items.size(); ++i)
-            {
-                presetComboBox.addItem(items[i], i + 1);
-            }
-            presetComboBox.setSelectedId(1); // Select default
-        }
-    }
-}
-
-void VocalAIProEditor::applyPreset(int presetIndex)
-{
-    // Professional Vocal Presets - Optimized for Music Producers
-    switch (presetIndex)
-    {
-        case 1: // Perfect Vocal
-            pitchCorrectionSlider.setValue(85.0);      // Strong pitch correction
-            pitchSpeedSlider.setValue(70.0);           // Fast response
-            reverbAmountSlider.setValue(25.0);         // Moderate space
-            delayTimeSlider.setValue(200.0);           // Short delay
-            delayFeedbackSlider.setValue(20.0);        // Low feedback
-            harmonyAmountSlider.setValue(15.0);        // Subtle harmony
-            harmonyVoicesSlider.setValue(2);           // 2 voices
-            inputGainSlider.setValue(2.0);             // Slight boost
-            outputGainSlider.setValue(0.0);            // Output gain 0
-            break;
-            
-        case 2: // Studio Master
-            pitchCorrectionSlider.setValue(95.0);      // Maximum pitch correction
-            pitchSpeedSlider.setValue(80.0);           // Very fast response
-            reverbAmountSlider.setValue(35.0);         // Studio reverb
-            delayTimeSlider.setValue(300.0);           // Medium delay
-            delayFeedbackSlider.setValue(25.0);        // Moderate feedback
-            harmonyAmountSlider.setValue(20.0);        // Smooth harmony
-            harmonyVoicesSlider.setValue(3);           // 3 voices
-            inputGainSlider.setValue(1.5);             // Subtle boost
-            outputGainSlider.setValue(-1.0);           // Slight output reduction
-            break;
-            
-        case 3: // Pop Hit Maker
-            pitchCorrectionSlider.setValue(90.0);      // Pop style pitch correction
-            pitchSpeedSlider.setValue(75.0);           // Fast response
-            reverbAmountSlider.setValue(40.0);         // Pop reverb
-            delayTimeSlider.setValue(250.0);           // Pop delay
-            delayFeedbackSlider.setValue(30.0);        // Pop feedback
-            harmonyAmountSlider.setValue(45.0);        // Strong harmony
-            harmonyVoicesSlider.setValue(4);           // 4 voices
-            inputGainSlider.setValue(3.0);             // Pop boost
-            outputGainSlider.setValue(0.5);            // Slight output boost
-            break;
-            
-        case 4: // Rock Legend
-            pitchCorrectionSlider.setValue(60.0);      // Natural pitch correction
-            pitchSpeedSlider.setValue(50.0);           // Medium response
-            reverbAmountSlider.setValue(60.0);         // Strong reverb
-            delayTimeSlider.setValue(500.0);           // Rock delay
-            delayFeedbackSlider.setValue(40.0);        // Rock feedback
-            harmonyAmountSlider.setValue(30.0);        // Rock harmony
-            harmonyVoicesSlider.setValue(3);           // 3 voices
-            inputGainSlider.setValue(4.0);             // Rock boost
-            outputGainSlider.setValue(1.0);            // Output boost
-            break;
-            
-        case 5: // R&B Smooth
-            pitchCorrectionSlider.setValue(80.0);      // Smooth pitch correction
-            pitchSpeedSlider.setValue(60.0);           // Smooth response
-            reverbAmountSlider.setValue(50.0);         // R&B reverb
-            delayTimeSlider.setValue(400.0);           // R&B delay
-            delayFeedbackSlider.setValue(35.0);        // R&B feedback
-            harmonyAmountSlider.setValue(55.0);        // Strong harmony
-            harmonyVoicesSlider.setValue(5);           // 5 voices
-            inputGainSlider.setValue(2.5);             // R&B boost
-            outputGainSlider.setValue(0.0);            // Output gain 0
-            break;
-            
-        case 6: // Trap Vocal
-            pitchCorrectionSlider.setValue(70.0);      // Trap pitch correction
-            pitchSpeedSlider.setValue(65.0);           // Trap response
-            reverbAmountSlider.setValue(70.0);         // Trap reverb
-            delayTimeSlider.setValue(150.0);           // Trap delay
-            delayFeedbackSlider.setValue(40.0);        // Safe feedback
-            harmonyAmountSlider.setValue(25.0);        // Trap harmony
-            harmonyVoicesSlider.setValue(2);           // 2 voices
-            inputGainSlider.setValue(3.0);             // Safe boost
-            outputGainSlider.setValue(1.0);            // Safe output boost
-            break;
-            
-        case 7: // Live Performance
-            pitchCorrectionSlider.setValue(75.0);      // Live pitch correction
-            pitchSpeedSlider.setValue(85.0);           // Very fast response
-            reverbAmountSlider.setValue(30.0);         // Live reverb
-            delayTimeSlider.setValue(200.0);           // Live delay
-            delayFeedbackSlider.setValue(15.0);        // Low feedback
-            harmonyAmountSlider.setValue(10.0);        // Subtle harmony
-            harmonyVoicesSlider.setValue(2);           // 2 voices
-            inputGainSlider.setValue(1.0);             // Live boost
-            outputGainSlider.setValue(0.0);            // Output gain 0
-            break;
-            
-        case 8: // Creative Chaos
-            pitchCorrectionSlider.setValue(50.0);      // Creative pitch correction
-            pitchSpeedSlider.setValue(40.0);           // Creative response
-            reverbAmountSlider.setValue(60.0);         // Safe reverb
-            delayTimeSlider.setValue(600.0);           // Safe delay
-            delayFeedbackSlider.setValue(40.0);        // Safe feedback
-            harmonyAmountSlider.setValue(50.0);        // Safe harmony
-            harmonyVoicesSlider.setValue(4);           // Safe voice count
-            inputGainSlider.setValue(2.0);             // Safe boost
-            outputGainSlider.setValue(0.5);            // Safe output boost
-            break;
-            
-        default:
-            // Default presets
-            break;
-    }
-}
+// Preset functions removed - using DAW preset system
 
 void VocalAIProEditor::updateVisualFeedback()
 {
@@ -619,10 +414,123 @@ void VocalAIProEditor::updateVisualFeedback()
     }
 }
 
-void VocalAIProEditor::updatePresetComboBox()
+// updatePresetComboBox removed - using DAW preset system
+
+//==============================================================================
+// CustomKnob Implementation
+VocalAIProEditor::CustomKnob::CustomKnob()
 {
-    // Update preset combo box with available presets
-    // This would load from file or create default presets
+    setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
+    setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+    setMouseDragSensitivity(200);
+    setScrollWheelEnabled(true);
+    setDoubleClickReturnValue(true, 0.0);
+}
+
+void VocalAIProEditor::CustomKnob::paint(juce::Graphics& g)
+{
+    auto bounds = getLocalBounds().toFloat();
+    auto centre = bounds.getCentre();
+    auto radius = juce::jmin(bounds.getWidth(), bounds.getHeight()) * 0.4f;
+    
+    // Draw knob background (outer ring)
+    g.setColour(juce::Colour(0xff2c3e50));
+    g.fillEllipse(centre.x - radius, centre.y - radius, radius * 2, radius * 2);
+    
+    // Draw knob outline
+    g.setColour(juce::Colour(0xff7f8c8d));
+    g.drawEllipse(centre.x - radius, centre.y - radius, radius * 2, radius * 2, 2.0f);
+    
+    // Draw knob fill (progress arc)
+    auto angle = getAngleFromValue(getValue());
+    auto startAngle = minAngle;
+    auto endAngle = angle;
+    
+    // Ensure proper arc drawing
+    if (endAngle > startAngle)
+    {
+        juce::Path arc;
+        arc.addCentredArc(centre.x, centre.y, radius * 0.8f, radius * 0.8f, 0.0f, startAngle, endAngle, true);
+        
+        g.setColour(juce::Colour(0xff4a90e2));
+        g.strokePath(arc, juce::PathStrokeType(8.0f, juce::PathStrokeType::curved, juce::PathStrokeType::rounded));
+    }
+    
+    // Draw knob pointer
+    auto pointerLength = radius * 0.7f;
+    auto pointerThickness = 3.0f;
+    
+    juce::Path pointer;
+    pointer.addRectangle(-pointerThickness * 0.5f, -radius, pointerThickness, -pointerLength);
+    
+    g.setColour(juce::Colour(0xffe74c3c));
+    g.fillPath(pointer, juce::AffineTransform::rotation(angle).translated(centre.x, centre.y));
+    
+    // Draw center dot
+    g.setColour(juce::Colour(0xff34495e));
+    g.fillEllipse(centre.x - 4, centre.y - 4, 8, 8);
+}
+
+void VocalAIProEditor::CustomKnob::mouseDown(const juce::MouseEvent& e)
+{
+    isDragging = true;
+    juce::Slider::mouseDown(e);
+}
+
+void VocalAIProEditor::CustomKnob::mouseDrag(const juce::MouseEvent& e)
+{
+    if (isDragging)
+    {
+        auto centre = getLocalBounds().getCentre().toFloat();
+        auto angle = std::atan2(e.position.y - centre.y, e.position.x - centre.x);
+        
+        // Convert angle to value with bounds checking
+        auto normalizedAngle = (angle - minAngle) / (maxAngle - minAngle);
+        normalizedAngle = juce::jlimit(0.0f, 1.0f, normalizedAngle);
+        auto value = getMinimum() + normalizedAngle * (getMaximum() - getMinimum());
+        
+        // Clamp value to valid range
+        value = juce::jlimit(getMinimum(), getMaximum(), value);
+        
+        setValue(value, juce::sendNotificationSync);
+    }
+}
+
+void VocalAIProEditor::CustomKnob::mouseUp(const juce::MouseEvent& e)
+{
+    isDragging = false;
+    juce::Slider::mouseUp(e);
+}
+
+void VocalAIProEditor::CustomKnob::mouseWheelMove(const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel)
+{
+    // More controlled wheel sensitivity
+    auto delta = wheel.deltaY * 0.05f; // Reduced sensitivity
+    auto currentValue = getValue();
+    auto newValue = currentValue + delta * (getMaximum() - getMinimum());
+    
+    // Clamp to valid range
+    newValue = juce::jlimit(getMinimum(), getMaximum(), newValue);
+    
+    setValue(newValue, juce::sendNotificationSync);
+}
+
+float VocalAIProEditor::CustomKnob::getAngleFromValue(float value)
+{
+    // Clamp value to valid range
+    value = juce::jlimit(getMinimum(), getMaximum(), value);
+    
+    auto normalizedValue = (value - getMinimum()) / (getMaximum() - getMinimum());
+    return minAngle + normalizedValue * (maxAngle - minAngle);
+}
+
+float VocalAIProEditor::CustomKnob::getValueFromAngle(float angle)
+{
+    // Normalize angle to [0, 1] range
+    auto normalizedAngle = (angle - minAngle) / (maxAngle - minAngle);
+    normalizedAngle = juce::jlimit(0.0f, 1.0f, normalizedAngle);
+    
+    return getMinimum() + normalizedAngle * (getMaximum() - getMinimum());
 }
 
 //==============================================================================

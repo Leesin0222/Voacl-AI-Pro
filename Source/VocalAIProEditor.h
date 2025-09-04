@@ -42,8 +42,8 @@ private:
     //==============================================================================
     // GUI Components - AI Pitch Tuning Section
     juce::GroupComponent aiPitchGroup;
-    juce::Slider pitchCorrectionSlider;
-    juce::Slider pitchSpeedSlider;
+    CustomKnob pitchCorrectionKnob;
+    CustomKnob pitchSpeedKnob;
     juce::ToggleButton pitchCorrectionEnabledButton;
     juce::Label pitchCorrectionLabel;
     juce::Label pitchSpeedLabel;
@@ -54,38 +54,33 @@ private:
     juce::GroupComponent vocalEffectsGroup;
     
     // Reverb Controls
-    juce::Slider reverbAmountSlider;
+    CustomKnob reverbAmountKnob;
     juce::Label reverbAmountLabel;
     
     // Delay Controls
-    juce::Slider delayTimeSlider;
-    juce::Slider delayFeedbackSlider;
+    CustomKnob delayTimeKnob;
+    CustomKnob delayFeedbackKnob;
     juce::Label delayTimeLabel;
     juce::Label delayFeedbackLabel;
     
     // Harmony Controls
-    juce::Slider harmonyAmountSlider;
-    juce::Slider harmonyVoicesSlider;
+    CustomKnob harmonyAmountKnob;
+    CustomKnob harmonyVoicesKnob;
     juce::Label harmonyAmountLabel;
     juce::Label harmonyVoicesLabel;
     
     //==============================================================================
     // GUI Components - Master Controls
     juce::GroupComponent masterGroup;
-    juce::Slider inputGainSlider;
-    juce::Slider outputGainSlider;
+    CustomKnob inputGainKnob;
+    CustomKnob outputGainKnob;
     juce::ToggleButton bypassButton;
     juce::Label inputGainLabel;
     juce::Label outputGainLabel;
     juce::Label bypassLabel;
     
     //==============================================================================
-    // GUI Components - Preset Management
-    juce::GroupComponent presetGroup;
-    juce::ComboBox presetComboBox;
-    juce::TextButton savePresetButton;
-    juce::TextButton deletePresetButton;
-    juce::Label presetLabel;
+    // GUI Components - Preset Management (Removed - using DAW preset dropdown)
     
     //==============================================================================
     // GUI Components - Visual Feedback
@@ -142,16 +137,33 @@ private:
     void setupGroupComponent(juce::GroupComponent& group, const juce::String& text);
     
     //==============================================================================
-    // Preset Management
-    void loadPresets();
-    void saveCurrentPreset();
-    void deleteCurrentPreset();
-    void applyPreset(int presetIndex);
+    // Custom Knob Component
+    class CustomKnob : public juce::Slider
+    {
+    public:
+        CustomKnob();
+        void paint(juce::Graphics& g) override;
+        void mouseDown(const juce::MouseEvent& e) override;
+        void mouseDrag(const juce::MouseEvent& e) override;
+        void mouseUp(const juce::MouseEvent& e) override;
+        void mouseWheelMove(const juce::MouseEvent& e, const juce::MouseWheelDetails& wheel) override;
+        
+    private:
+        void drawKnob(juce::Graphics& g, float angle);
+        float getAngleFromValue(float value);
+        float getValueFromAngle(float angle);
+        
+        static constexpr float minAngle = -2.5f;
+        static constexpr float maxAngle = 2.5f;
+        bool isDragging = false;
+    };
+    
+    //==============================================================================
+    // Preset Management (Removed - using DAW preset system)
     
     //==============================================================================
     // Visual Updates
     void updateVisualFeedback();
-    void updatePresetComboBox();
     
     //==============================================================================
     // Constants

@@ -61,6 +61,35 @@ public:
     juce::AudioProcessorValueTreeState& getValueTreeState() { return parameters; }
     static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
     
+    //==============================================================================
+    // Preset Management
+    void initializePresets();
+    void applyPreset(int presetIndex);
+    void saveCurrentPreset(int presetIndex);
+    void loadPreset(int presetIndex);
+    void checkForCustomPreset();
+    
+    // Preset data structure
+    struct PresetData
+    {
+        float pitchCorrection = 50.0f;
+        float pitchSpeed = 50.0f;
+        bool pitchCorrectionEnabled = true;
+        float reverbAmount = 0.0f;
+        float delayTime = 250.0f;
+        float delayFeedback = 30.0f;
+        float harmonyAmount = 0.0f;
+        int harmonyVoices = 2;
+        float inputGain = 0.0f;
+        float outputGain = 0.0f;
+        bool bypass = false;
+    };
+    
+    std::vector<PresetData> presets;
+    std::vector<juce::String> presetNames;
+    int currentProgram = 0;
+    bool isCustomPreset = false;
+    
     // AI Pitch Tuning Parameters
     std::atomic<float>* pitchCorrectionParam;
     std::atomic<float>* pitchSpeedParam;
