@@ -110,6 +110,10 @@ public:
     // Getter functions for editor access
     AIPitchTuner* getAIPitchTuner() const { return aiPitchTuner.get(); }
     VocalEffects* getVocalEffects() const { return vocalEffects.get(); }
+    
+    // Spectrum Analysis
+    void updateSpectrum(const juce::AudioBuffer<float>& buffer);
+    const std::vector<float>& getSpectrumMagnitudes() const { return spectrumMagnitudes; }
 
 private:
     //==============================================================================
@@ -123,6 +127,12 @@ private:
     juce::dsp::Gain<float> inputGain;
     juce::dsp::Gain<float> outputGain;
     juce::dsp::DryWetMixer<float> dryWetMixer;
+    
+    // Spectrum Analysis
+    std::unique_ptr<juce::dsp::FFT> fft;
+    std::vector<float> fftData;
+    std::vector<float> window;
+    std::vector<float> spectrumMagnitudes;
     
     // Parameter Smoothing
     juce::LinearSmoothedValue<float> inputGainSmoother;
@@ -139,7 +149,6 @@ private:
     // AudioProcessorValueTreeState::Listener
     void parameterChanged(const juce::String& parameterID, float newValue) override;
 
-private:
     //==============================================================================
     // Parameter Update Handling
     void updateParameters();

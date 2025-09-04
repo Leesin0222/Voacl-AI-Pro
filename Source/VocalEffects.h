@@ -56,6 +56,35 @@ public:
     // Formant Controls
     void setFormantShift(float shift);         // -1.0 to +1.0
     void setFormantAmount(float amount);       // 0.0 to 1.0
+    
+    // Advanced Audio Processing
+    void applyNaturalPitchVariation(float* samples, int numSamples, float amount);
+    void applyDynamicEQ(float* samples, int numSamples, double sampleRate);
+    void applyVocalEnhancement(float* samples, int numSamples, double sampleRate);
+    
+    //==============================================================================
+    // Effect Parameters
+    float reverbAmount = 0.0f;
+    float reverbSize = 0.5f;
+    float reverbDamping = 0.5f;
+    float reverbWidth = 1.0f;
+    
+    float delayTime = 250.0f;
+    float delayFeedback = 0.3f;
+    float delayMix = 0.5f;
+    float delayFilter = 8000.0f;
+    
+    float harmonyAmount = 0.0f;
+    int harmonyVoices = 2;
+    int harmonyInterval = 3; // Minor third
+    float harmonyDetune = 0.0f;
+    
+    float doublingAmount = 0.0f;
+    float doublingDelay = 20.0f;
+    float doublingDetune = 5.0f;
+    
+    float formantShift = 0.0f;
+    float formantAmount = 0.0f;
 
 private:
     //==============================================================================
@@ -285,30 +314,6 @@ private:
     };
     
     FormantShifter formantShifter;
-    
-    //==============================================================================
-    // Effect Parameters
-    float reverbAmount = 0.0f;
-    float reverbSize = 0.5f;
-    float reverbDamping = 0.5f;
-    float reverbWidth = 1.0f;
-    
-    float delayTime = 250.0f;
-    float delayFeedback = 0.3f;
-    float delayMix = 0.5f;
-    float delayFilter = 8000.0f;
-    
-    float harmonyAmount = 0.0f;
-    int harmonyVoices = 2;
-    int harmonyInterval = 3; // Minor third
-    float harmonyDetune = 0.0f;
-    
-    float doublingAmount = 0.0f;
-    float doublingDelay = 20.0f;
-    float doublingDetune = 5.0f;
-    
-    float formantShift = 0.0f;
-    float formantAmount = 0.0f;
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VocalEffects)
 };

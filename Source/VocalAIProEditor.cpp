@@ -163,6 +163,9 @@ VocalAIProEditor::VocalAIProEditor (VocalAIProPlugin& p)
     spectrumAnalyzer = std::make_unique<SpectrumAnalyzer>();
     addAndMakeVisible(spectrumAnalyzer.get());
     
+    // Initialize Advanced Visual Components
+    createAdvancedVisualComponents();
+    
     //==============================================================================
     // Add listeners
     pitchCorrectionKnob.addListener(this);
@@ -305,6 +308,41 @@ void VocalAIProEditor::resized()
     // Spectrum analyzer
     if (spectrumAnalyzer)
         spectrumAnalyzer->setBounds(visualContent);
+    
+    // Advanced visual components
+    if (pitchMeter)
+        pitchMeter->setBounds(visualContent.removeFromTop(30));
+    if (confidenceMeter)
+        confidenceMeter->setBounds(visualContent.removeFromTop(30));
+    if (vocalDetector)
+        vocalDetector->setBounds(visualContent.removeFromTop(30));
+    if (harmonicityDisplay)
+        harmonicityDisplay->setBounds(visualContent.removeFromTop(30));
+}
+
+//==============================================================================
+// Advanced Visual Components
+void VocalAIProEditor::createAdvancedVisualComponents()
+{
+    // Create Pitch Meter
+    pitchMeter = std::make_unique<juce::Component>();
+    pitchMeter->setName("Pitch Meter");
+    addAndMakeVisible(pitchMeter.get());
+    
+    // Create Confidence Meter
+    confidenceMeter = std::make_unique<juce::Component>();
+    confidenceMeter->setName("Confidence Meter");
+    addAndMakeVisible(confidenceMeter.get());
+    
+    // Create Vocal Detector
+    vocalDetector = std::make_unique<juce::Component>();
+    vocalDetector->setName("Vocal Detector");
+    addAndMakeVisible(vocalDetector.get());
+    
+    // Create Harmonicity Display
+    harmonicityDisplay = std::make_unique<juce::Component>();
+    harmonicityDisplay->setName("Harmonicity Display");
+    addAndMakeVisible(harmonicityDisplay.get());
 }
 
 void VocalAIProEditor::timerCallback()
@@ -410,6 +448,16 @@ void VocalAIProEditor::updateVisualFeedback()
             currentPitchLabel.setText("Pitch: -- Hz", juce::dontSendNotification);
             pitchConfidenceLabel.setText("Confidence: --%", juce::dontSendNotification);
             statusLabel.setText("Status: No Signal", juce::dontSendNotification);
+        }
+    }
+    
+    // Update spectrum analyzer
+    if (spectrumAnalyzer)
+    {
+        const auto& magnitudes = audioProcessor.getSpectrumMagnitudes();
+        if (!magnitudes.empty())
+        {
+            spectrumAnalyzer->updateSpectrum(magnitudes.data(), static_cast<int>(magnitudes.size()));
         }
     }
 }
@@ -591,7 +639,13 @@ void VocalAIProEditor::SpectrumAnalyzer::updateSpectrum(const float* magnitudes,
     {
         spectrumData[i] = juce::jlimit(0.0f, 1.0f, magnitudes[i]);
         
-        // Apply smoothing
-        smoothedSpectrum[i] = smoothedSpectrum[i] * 0.8f + spectrumData[i] * 0.2f;
+        // Apply smoothing with different factors for different frequency ranges
+        float smoothingFactor = 0.8f;
+        if (i < numBins / 4) // Low frequencies - more smoothing
+            smoothingFactor = 0.9f;
+        else if (i > numBins * 3 / 4) // High frequencies - less smoothing
+            smoothingFactor = 0.7f;
+            
+        smoothedSpectrum[i] = smoothedSpectrum[i] * smoothingFactor + spectrumData[i] * (1.0f - smoothingFactor);
     }
 }

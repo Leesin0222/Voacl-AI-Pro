@@ -414,7 +414,7 @@ void AIPitchTuner::processPitchShiftFFT(float* samples, int numSamples, float pi
         // Apply window and overlap-add
         for (int i = 0; i < fftSize && pos + i < numSamples; ++i)
         {
-            samples[pos + i] = fftBuffer[i] * windowBuffer[i] * 0.5f; // Scale down for overlap
+            samples[pos + i] = fftBuffer[i] * windowBuffer[i] * 0.5f; // Scale down for overlap only
         }
     }
 }
@@ -535,4 +535,209 @@ float AIPitchTuner::findPeakInRange(const float* data, int start, int end)
     }
     
     return static_cast<float>(maxIndex);
+}
+
+//==============================================================================
+// Advanced AI Features Implementation
+float AIPitchTuner::calculatePitchConfidence(const float* samples, int numSamples)
+{
+    if (numSamples < 1024) return 0.0f;
+    
+    // Calculate multiple confidence metrics
+    float autocorrConfidence = 0.0f;
+    float yinConfidence = 0.0f;
+    float harmonicityConfidence = 0.0f;
+    
+    // Autocorrelation confidence
+    float detectedPitch = autocorrelationPitchDetection(samples, numSamples);
+    if (detectedPitch > 0.0f)
+    {
+        float maxCorr = 0.0f;
+        int bestPeriod = static_cast<int>(sampleRate / detectedPitch);
+        
+        for (int period = bestPeriod - 2; period <= bestPeriod + 2; ++period)
+        {
+            if (period > 0 && period < numSamples / 2)
+            {
+                float corr = calculateAutocorrelation(samples, numSamples, period);
+                maxCorr = juce::jmax(maxCorr, corr);
+            }
+        }
+        autocorrConfidence = juce::jlimit(0.0f, 1.0f, maxCorr * 2.0f);
+    }
+    
+    // YIN confidence
+    float yinPitch = yinPitchDetection(samples, numSamples);
+    if (yinPitch > 0.0f)
+    {
+        int yinPeriod = static_cast<int>(sampleRate / yinPitch);
+        if (yinPeriod > 0 && yinPeriod < static_cast<int>(yinBuffer.size()))
+        {
+            float yinValue = yinBuffer[yinPeriod];
+            yinConfidence = juce::jlimit(0.0f, 1.0f, 1.0f - yinValue * 10.0f);
+        }
+    }
+    
+    // Harmonicity confidence
+    harmonicityConfidence = calculateHarmonicity(samples, numSamples);
+    
+    // Combine confidences with weights
+    float totalConfidence = (autocorrConfidence * 0.4f + 
+                           yinConfidence * 0.3f + 
+                           harmonicityConfidence * 0.3f);
+    
+    return juce::jlimit(0.0f, 1.0f, totalConfidence);
+}
+
+float AIPitchTuner::detectVocalFormants(const float* samples, int numSamples)
+{
+    if (numSamples < 1024) return 0.0f;
+    
+    // Simple formant detection using spectral peaks
+    std::vector<float> spectrum(512, 0.0f);
+    
+    // Apply window and FFT
+    std::vector<float> windowedSamples(1024, 0.0f);
+    for (int i = 0; i < juce::jmin(1024, numSamples); ++i)
+    {
+        windowedSamples[i] = samples[i] * windowBuffer[i];
+    }
+    
+    // Perform FFT
+    juce::dsp::FFT fft(10); // 1024 point FFT
+    std::vector<float> fftData(2048, 0.0f);
+    std::copy(windowedSamples.begin(), windowedSamples.end(), fftData.begin());
+    fft.performFrequencyOnlyForwardTransform(fftData.data());
+    
+    // Calculate magnitude spectrum
+    for (int i = 0; i < 512; ++i)
+    {
+        float real = fftData[i * 2];
+        float imag = fftData[i * 2 + 1];
+        spectrum[i] = std::sqrt(real * real + imag * imag);
+    }
+    
+    // Find formant peaks (typically around 800-2000 Hz for vocals)
+    float formantEnergy = 0.0f;
+    int formantStart = static_cast<int>(800.0f * 512.0f / (sampleRate / 2.0f));
+    int formantEnd = static_cast<int>(2000.0f * 512.0f / (sampleRate / 2.0f));
+    
+    for (int i = formantStart; i < juce::jmin(formantEnd, 512); ++i)
+    {
+        formantEnergy += spectrum[i];
+    }
+    
+    return juce::jlimit(0.0f, 1.0f, formantEnergy / 100.0f);
+}
+
+float AIPitchTuner::calculateSpectralCentroid(const float* samples, int numSamples)
+{
+    if (numSamples < 1024) return 0.0f;
+    
+    // Calculate spectral centroid (brightness indicator)
+    std::vector<float> spectrum(512, 0.0f);
+    
+    // Apply window and FFT
+    std::vector<float> windowedSamples(1024, 0.0f);
+    for (int i = 0; i < juce::jmin(1024, numSamples); ++i)
+    {
+        windowedSamples[i] = samples[i] * windowBuffer[i];
+    }
+    
+    // Perform FFT
+    juce::dsp::FFT fft(10);
+    std::vector<float> fftData(2048, 0.0f);
+    std::copy(windowedSamples.begin(), windowedSamples.end(), fftData.begin());
+    fft.performFrequencyOnlyForwardTransform(fftData.data());
+    
+    // Calculate magnitude spectrum
+    for (int i = 0; i < 512; ++i)
+    {
+        float real = fftData[i * 2];
+        float imag = fftData[i * 2 + 1];
+        spectrum[i] = std::sqrt(real * real + imag * imag);
+    }
+    
+    // Calculate spectral centroid
+    float weightedSum = 0.0f;
+    float magnitudeSum = 0.0f;
+    
+    for (int i = 0; i < 512; ++i)
+    {
+        float frequency = i * sampleRate / 1024.0f;
+        weightedSum += frequency * spectrum[i];
+        magnitudeSum += spectrum[i];
+    }
+    
+    if (magnitudeSum > 0.0f)
+    {
+        return weightedSum / magnitudeSum;
+    }
+    
+    return 0.0f;
+}
+
+bool AIPitchTuner::isVocalSignal(const float* samples, int numSamples)
+{
+    if (numSamples < 1024) return false;
+    
+    // Multi-criteria vocal detection
+    float rms = calculateRMS(samples, numSamples);
+    float formantEnergy = detectVocalFormants(samples, numSamples);
+    float harmonicity = calculateHarmonicity(samples, numSamples);
+    float spectralCentroid = calculateSpectralCentroid(samples, numSamples);
+    
+    // Vocal characteristics
+    bool hasEnergy = rms > 0.01f;
+    bool hasFormants = formantEnergy > 0.1f;
+    bool isHarmonic = harmonicity > 0.3f;
+    bool isBright = spectralCentroid > 1000.0f && spectralCentroid < 4000.0f;
+    
+    // Combine criteria
+    int vocalScore = 0;
+    if (hasEnergy) vocalScore++;
+    if (hasFormants) vocalScore++;
+    if (isHarmonic) vocalScore++;
+    if (isBright) vocalScore++;
+    
+    return vocalScore >= 3; // At least 3 out of 4 criteria
+}
+
+float AIPitchTuner::calculateHarmonicity(const float* samples, int numSamples)
+{
+    if (numSamples < 1024) return 0.0f;
+    
+    // Calculate harmonicity using autocorrelation
+    float fundamental = autocorrelationPitchDetection(samples, numSamples);
+    if (fundamental <= 0.0f) return 0.0f;
+    
+    int fundamentalPeriod = static_cast<int>(sampleRate / fundamental);
+    if (fundamentalPeriod <= 0) return 0.0f;
+    
+    // Check for harmonic peaks
+    float harmonicEnergy = 0.0f;
+    float totalEnergy = 0.0f;
+    
+    for (int harmonic = 1; harmonic <= 8; ++harmonic)
+    {
+        int period = fundamentalPeriod * harmonic;
+        if (period < numSamples / 2)
+        {
+            float corr = calculateAutocorrelation(samples, numSamples, period);
+            harmonicEnergy += corr;
+        }
+    }
+    
+    // Calculate total energy
+    for (int i = 0; i < numSamples; ++i)
+    {
+        totalEnergy += samples[i] * samples[i];
+    }
+    
+    if (totalEnergy > 0.0f)
+    {
+        return juce::jlimit(0.0f, 1.0f, harmonicEnergy / totalEnergy * 10.0f);
+    }
+    
+    return 0.0f;
 }

@@ -230,6 +230,18 @@ void VocalAIProPlugin::prepareToPlay (double sampleRate, int samplesPerBlock)
         outputGain.prepare(spec);
         dryWetMixer.prepare(spec);
         
+        // Initialize spectrum analysis
+        fft = std::make_unique<juce::dsp::FFT>(10); // 1024 point FFT
+        fftData.resize(2048, 0.0f);
+        window.resize(1024, 0.0f);
+        spectrumMagnitudes.resize(512, 0.0f);
+        
+        // Create Hann window
+        for (int i = 0; i < 1024; ++i)
+        {
+            window[i] = 0.5f * (1.0f - std::cos(2.0f * juce::MathConstants<float>::pi * i / 1023.0f));
+        }
+        
         // Initialize parameter smoothers
         inputGainSmoother.reset(sampleRate, 0.05); // 50ms smoothing
         outputGainSmoother.reset(sampleRate, 0.05);
@@ -296,57 +308,127 @@ void VocalAIProPlugin::processBlock (juce::AudioBuffer<float>& buffer, juce::Mid
 {
     juce::ignoreUnused (midiMessages);
 
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    // Enhanced error handling and validation
+    try
+    {
+        // Validate buffer
+        if (buffer.getNumSamples() <= 0 || buffer.getNumChannels() <= 0)
+        {
+            return;
+        }
+        
+        // Check for NaN or infinity in buffer
+        for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+        {
+            const float* channelData = buffer.getReadPointer(channel);
+            for (int sample = 0; sample < buffer.getNumSamples(); ++sample)
+            {
+                if (std::isnan(channelData[sample]) || std::isinf(channelData[sample]))
+                {
+                    buffer.clear();
+                    return;
+                }
+            }
+        }
 
-    // Clear unused output channels
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        juce::ScopedNoDenormals noDenormals;
+        auto totalNumInputChannels  = getTotalNumInputChannels();
+        auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // Update parameters
-    updateParameters();
-    
-    // Bypass check
-    if (bypassParam->load() > 0.5f)
-    {
-        return;
+        // Clear unused output channels
+        for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
+            buffer.clear (i, 0, buffer.getNumSamples());
+
+        // Bypass check - must be first!
+        if (bypassParam->load() > 0.5f)
+        {
+            return;
+        }
+        
+        // Update parameters with error handling
+        try
+        {
+            updateParameters();
+        }
+        catch (const std::exception& e)
+        {
+            DBG("Error in updateParameters: " << e.what());
+            return;
+        }
+        
+        // Apply input gain with validation
+        auto currentInputGain = inputGainSmoother.getNextValue();
+        if (std::isnan(currentInputGain) || std::isinf(currentInputGain))
+        {
+            currentInputGain = 1.0f;
+        }
+        
+        if (currentInputGain != 1.0f)
+        {
+            buffer.applyGain(juce::jlimit(0.0f, 10.0f, currentInputGain));
+        }
+        
+        // AI Pitch Tuning with error handling
+        if (aiPitchTuner && pitchCorrectionEnabledParam->load() > 0.5f)
+        {
+            try
+            {
+                aiPitchTuner->processBlock(buffer, midiMessages);
+            }
+            catch (const std::exception& e)
+            {
+                DBG("Error in AI Pitch Tuning: " << e.what());
+            }
+        }
+        
+        // Vocal Effects with advanced processing
+        if (vocalEffects)
+        {
+            try
+            {
+                vocalEffects->processBlock(buffer, midiMessages);
+                
+                // Apply additional vocal enhancement
+                for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+                {
+                    float* channelData = buffer.getWritePointer(channel);
+                    vocalEffects->applyDynamicEQ(channelData, buffer.getNumSamples(), currentSampleRate);
+                    vocalEffects->applyVocalEnhancement(channelData, buffer.getNumSamples(), currentSampleRate);
+                }
+            }
+            catch (const std::exception& e)
+            {
+                DBG("Error in Vocal Effects: " << e.what());
+            }
+        }
+        
+        // Apply output gain with validation
+        auto currentOutputGain = outputGainSmoother.getNextValue();
+        if (std::isnan(currentOutputGain) || std::isinf(currentOutputGain))
+        {
+            currentOutputGain = 1.0f;
+        }
+        
+        if (currentOutputGain != 1.0f)
+        {
+            buffer.applyGain(juce::jlimit(0.0f, 10.0f, currentOutputGain));
+        }
+        
+        // Update spectrum analysis for visual feedback
+        try
+        {
+            updateSpectrum(buffer);
+        }
+        catch (const std::exception& e)
+        {
+            DBG("Error in spectrum analysis: " << e.what());
+        }
     }
-    
-    // Create processing context
-    juce::dsp::AudioBlock<float> block(buffer);
-    juce::dsp::ProcessContextReplacing<float> context(block);
-    
-    // Apply input gain with safety check
-    if (inputGainSmoother.getCurrentValue() < 10.0f) // Prevent excessive gain
+    catch (const std::exception& e)
     {
-        inputGain.process(context);
+        DBG("Critical error in processBlock: " << e.what());
+        buffer.clear();
     }
-    
-    // Store dry signal for dry/wet mixing
-    auto dryBlock = block;
-    
-    // AI Pitch Tuning
-    if (aiPitchTuner && pitchCorrectionEnabledParam->load() > 0.5f)
-    {
-        aiPitchTuner->processBlock(buffer, midiMessages);
-    }
-    
-    // Vocal Effects
-    if (vocalEffects)
-    {
-        vocalEffects->processBlock(buffer, midiMessages);
-    }
-    
-    // Apply output gain with safety check
-    if (outputGainSmoother.getCurrentValue() < 10.0f) // Prevent excessive gain
-    {
-        outputGain.process(context);
-    }
-    
-    // Apply dry/wet mix (safe 50% wet to prevent feedback)
-    dryWetMixer.setWetMixProportion(0.5f);
-    dryWetMixer.mixWetSamples(block);
 }
 
 //==============================================================================
@@ -427,10 +509,6 @@ void VocalAIProPlugin::updateParameters()
     outputGainSmoother.setTargetValue(juce::Decibels::decibelsToGain(outputGainDb));
     reverbAmountSmoother.setTargetValue(reverbAmountParam->load() / 100.0f);
     delayTimeSmoother.setTargetValue(delayTimeParam->load());
-    
-    // Update input/output gain with smoothing
-    inputGain.setGainLinear(inputGainSmoother.getNextValue());
-    outputGain.setGainLinear(outputGainSmoother.getNextValue());
     
     // Update AI components
     if (aiPitchTuner)
@@ -629,6 +707,38 @@ void VocalAIProPlugin::checkForCustomPreset()
     );
     
     isCustomPreset = !matchesPreset;
+}
+
+//==============================================================================
+// Spectrum Analysis Implementation
+void VocalAIProPlugin::updateSpectrum(const juce::AudioBuffer<float>& buffer)
+{
+    if (!isInitialized || buffer.getNumSamples() < 1024) return;
+    
+    // Get left channel data
+    const float* channelData = buffer.getReadPointer(0);
+    
+    // Apply window and prepare for FFT
+    for (int i = 0; i < 1024; ++i)
+    {
+        fftData[i] = channelData[i] * window[i];
+        fftData[i + 1024] = 0.0f; // Zero padding
+    }
+    
+    // Perform FFT
+    fft->performFrequencyOnlyForwardTransform(fftData.data());
+    
+    // Calculate magnitudes and convert to dB
+    for (int i = 0; i < 512; ++i)
+    {
+        float real = fftData[i * 2];
+        float imag = fftData[i * 2 + 1];
+        float magnitude = std::sqrt(real * real + imag * imag);
+        
+        // Convert to dB and normalize
+        float db = juce::Decibels::gainToDecibels(magnitude + 1e-10f);
+        spectrumMagnitudes[i] = juce::jlimit(0.0f, 1.0f, (db + 60.0f) / 60.0f);
+    }
 }
 
 //==============================================================================

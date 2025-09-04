@@ -103,7 +103,7 @@ private:
     private:
         std::vector<float> spectrumData;
         std::vector<float> smoothedSpectrum;
-        static constexpr int numBins = 64;
+        static constexpr int numBins = 512;
         static constexpr int smoothingFactor = 8;
     };
     
@@ -114,6 +114,12 @@ private:
     juce::Label titleLabel;
     juce::Label versionLabel;
     juce::Label companyLabel;
+    
+    // Advanced Visual Components
+    std::unique_ptr<juce::Component> pitchMeter;
+    std::unique_ptr<juce::Component> confidenceMeter;
+    std::unique_ptr<juce::Component> vocalDetector;
+    std::unique_ptr<juce::Component> harmonicityDisplay;
     
     //==============================================================================
     // Parameter Attachments
@@ -128,13 +134,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> inputGainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> outputGainAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> bypassAttachment;
-    
-    //==============================================================================
-    // GUI Styling
-    void setupSlider(juce::Slider& slider, const juce::String& suffix = "");
-    void setupButton(juce::Button& button);
-    void setupLabel(juce::Label& label, const juce::String& text);
-    void setupGroupComponent(juce::GroupComponent& group, const juce::String& text);
     
     //==============================================================================
     // Custom Knob Component
@@ -164,6 +163,9 @@ private:
     //==============================================================================
     // Visual Updates
     void updateVisualFeedback();
+    
+    // Advanced Visual Components
+    void createAdvancedVisualComponents();
     
     //==============================================================================
     // Constants

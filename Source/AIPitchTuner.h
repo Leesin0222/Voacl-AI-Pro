@@ -39,6 +39,29 @@ public:
     float getCurrentPitch() const { return currentPitch; }
     float getPitchConfidence() const { return pitchConfidence; }
     bool isPitchDetected() const { return pitchDetected; }
+    
+    //==============================================================================
+    // Helper Functions
+    float frequencyToMidi(float frequency);
+    float midiToFrequency(float midiNote);
+    float quantizeToScale(float midiNote, int scaleMode);
+    bool isInRange(float frequency, float minFreq = 80.0f, float maxFreq = 2000.0f);
+    
+    // Window Functions
+    void applyHannWindow(float* samples, int numSamples);
+    void applyBlackmanWindow(float* samples, int numSamples);
+    
+    // Mathematical Functions
+    float calculateRMS(const float* samples, int numSamples);
+    float calculateAutocorrelation(const float* samples, int numSamples, int lag);
+    float findPeakInRange(const float* data, int start, int end);
+    
+    // Advanced AI Features
+    float calculatePitchConfidence(const float* samples, int numSamples);
+    float detectVocalFormants(const float* samples, int numSamples);
+    float calculateSpectralCentroid(const float* samples, int numSamples);
+    bool isVocalSignal(const float* samples, int numSamples);
+    float calculateHarmonicity(const float* samples, int numSamples);
 
 private:
     //==============================================================================
@@ -96,22 +119,6 @@ private:
     // Smoothing
     juce::LinearSmoothedValue<float> pitchRatioSmoother;
     juce::LinearSmoothedValue<float> pitchSmoother;
-    
-    //==============================================================================
-    // Helper Functions
-    float frequencyToMidi(float frequency);
-    float midiToFrequency(float midiNote);
-    float quantizeToScale(float midiNote, int scaleMode);
-    bool isInRange(float frequency, float minFreq = 80.0f, float maxFreq = 2000.0f);
-    
-    // Window Functions
-    void applyHannWindow(float* samples, int numSamples);
-    void applyBlackmanWindow(float* samples, int numSamples);
-    
-    // Mathematical Functions
-    float calculateRMS(const float* samples, int numSamples);
-    float calculateAutocorrelation(const float* samples, int numSamples, int lag);
-    float findPeakInRange(const float* data, int start, int end);
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AIPitchTuner)
 };
